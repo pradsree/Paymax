@@ -1,0 +1,2311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PayMax — Smart Payment Optimizer</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Figtree:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f5f2ec;--bg2:#edeae3;--surface:#fff;--surface2:#f9f7f3;
+  --border:rgba(0,0,0,.08);--border2:rgba(0,0,0,.14);
+  --text:#1a1916;--muted:#7a7870;--muted2:#b0ada6;
+  --gold:#b8860b;--gold-bg:#fdf6e3;--gold-bd:rgba(184,134,11,.25);
+  --green:#2d6a4f;--green-bg:#ebf5ef;--green-bd:rgba(45,106,79,.25);
+  --blue:#1a4a7a;--blue-bg:#e8f0fa;--blue-bd:rgba(26,74,122,.2);
+  --red:#a0281e;--red-bg:#fdecea;--red-bd:rgba(160,40,30,.2);
+  --amber:#92600a;--amber-bg:#fef3e2;--amber-bd:rgba(146,96,10,.25);
+  --plaid:#2B5CE6;
+  --r:14px;--r-sm:8px;--r-xs:5px;
+  --shadow:0 2px 12px rgba(0,0,0,.07);--shadow-lg:0 8px 40px rgba(0,0,0,.13);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Figtree',sans-serif;font-weight:300;min-height:100vh;}
+
+/* ── DEV BANNER ─── */
+#dev-banner{background:var(--amber-bg);border-bottom:1.5px solid var(--amber-bd);padding:.55rem 2rem;display:flex;align-items:center;gap:10px;font-size:.76rem;}
+#dev-banner .db-text{color:var(--amber);flex:1;line-height:1.5;}
+#dev-banner .db-text strong{font-weight:600;}
+#dev-banner .db-text code{font-family:monospace;background:rgba(146,96,10,.1);padding:1px 5px;border-radius:3px;}
+#dev-banner .db-btn{background:var(--amber);color:#fff;border:none;border-radius:var(--r-xs);padding:.3rem .85rem;font-family:'Syne',sans-serif;font-size:.68rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;}
+#dev-banner .db-x{background:none;border:none;color:var(--muted2);cursor:pointer;font-size:1rem;margin-left:4px;}
+
+/* ── TOPBAR ─── */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:54px;position:sticky;top:0;z-index:100;}
+.topbar-logo{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;}
+.tnav-group{display:flex;gap:2px;}
+.tnav{background:none;border:none;color:var(--muted);font-family:'Figtree',sans-serif;font-size:.81rem;padding:.4rem .95rem;border-radius:var(--r-xs);cursor:pointer;transition:all .2s;white-space:nowrap;}
+.tnav:hover{color:var(--text);background:var(--bg2);}
+.tnav.active{color:var(--text);background:var(--bg2);font-weight:500;}
+.wallet-pill{background:var(--gold-bg);border:1px solid var(--gold-bd);border-radius:20px;padding:.26rem .85rem;font-size:.72rem;color:var(--gold);font-weight:600;cursor:pointer;}
+
+/* ── ONBOARDING ─── */
+#onboarding{position:fixed;inset:0;background:var(--bg);z-index:999;overflow-y:auto;padding:3rem 1rem;display:flex;flex-direction:column;align-items:center;}
+.ob-inner{max-width:700px;width:100%;}
+.ob-step{display:none;animation:fadeUp .3s ease;}
+.ob-step.active{display:block;}
+.ob-logo{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:2.5rem;}
+.ob-logo span{color:var(--text);}
+.ob-title{font-family:'Instrument Serif',serif;font-size:2.2rem;line-height:1.2;margin-bottom:.4rem;}
+.ob-title em{font-style:italic;color:var(--gold);}
+.ob-sub{color:var(--muted);font-size:.88rem;margin-bottom:1.75rem;line-height:1.65;max-width:540px;}
+.ob-progress{display:flex;gap:5px;margin-bottom:2.25rem;}
+.ob-dot{height:3px;border-radius:2px;background:var(--border2);flex:1;transition:background .3s;}
+.ob-dot.done{background:var(--text);}
+.ob-next-btn{background:var(--text);color:var(--bg);border:none;border-radius:var(--r-sm);padding:.72rem 2.25rem;font-family:'Syne',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:opacity .2s;margin-top:1rem;}
+.ob-next-btn:hover{opacity:.82;}
+.ob-skip{background:none;border:none;color:var(--muted);font-family:'Figtree',sans-serif;font-size:.82rem;cursor:pointer;margin-left:1rem;text-decoration:underline;}
+
+/* Card selection grid */
+.card-select-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:7px;margin-bottom:1.25rem;max-height:370px;overflow-y:auto;padding-right:2px;}
+.card-opt{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.7rem .9rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:9px;}
+.card-opt:hover{border-color:var(--border2);}
+.card-opt.sel{border-color:var(--gold);background:var(--gold-bg);}
+.co-chip{width:26px;height:18px;border-radius:3px;flex-shrink:0;}
+.co-name{font-size:.8rem;font-weight:500;line-height:1.3;}
+.co-net{font-size:.66rem;color:var(--muted);}
+.co-chk{margin-left:auto;color:var(--gold);font-size:.85rem;display:none;}
+.card-opt.sel .co-chk{display:block;}
+
+/* Balances step */
+.bal-row{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:.85rem 1.1rem;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;margin-bottom:8px;}
+.bal-chip{width:26px;height:18px;border-radius:3px;flex-shrink:0;}
+
+/* Plaid note */
+.plaid-note{background:var(--blue-bg);border:1px solid var(--blue-bd);border-radius:var(--r-sm);padding:.85rem 1rem;font-size:.78rem;color:var(--blue);line-height:1.6;margin-bottom:1rem;}
+.plaid-note strong{font-weight:600;}
+.plaid-note code{font-family:monospace;background:rgba(26,74,122,.1);padding:1px 5px;border-radius:3px;font-size:.73rem;}
+.plaid-note a{color:var(--plaid);}
+
+/* Loyalty dropdown step */
+.loyalty-add-row{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:.85rem 1.1rem;display:grid;grid-template-columns:1.8fr 1fr auto auto;gap:10px;align-items:end;margin-bottom:8px;}
+.loyalty-portal-preview{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-xs);padding:.4rem .75rem;font-size:.72rem;color:var(--muted);display:flex;align-items:center;gap:6px;margin-top:4px;}
+.loyalty-portal-preview a{color:var(--blue);text-decoration:none;font-size:.72rem;}
+
+/* fields */
+.fl{display:flex;flex-direction:column;gap:4px;}
+.fl label{font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;}
+input[type=text],input[type=number],input[type=date],select,textarea{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-xs);
+  color:var(--text);font-family:'Figtree',sans-serif;font-size:.84rem;font-weight:400;
+  padding:.48rem .72rem;width:100%;outline:none;transition:border-color .2s;-moz-appearance:textfield;
+}
+input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none;}
+input:focus,select:focus{border-color:var(--text);background:var(--surface);}
+select{appearance:none;cursor:pointer;}
+.add-btn-sm{background:none;border:1px dashed var(--border2);border-radius:var(--r-sm);padding:.62rem;color:var(--muted);font-family:'Figtree',sans-serif;font-size:.81rem;cursor:pointer;width:100%;transition:all .2s;}
+.add-btn-sm:hover{border-color:var(--text);color:var(--text);}
+.rm-btn{background:none;border:none;color:var(--muted2);cursor:pointer;font-size:1.1rem;padding:2px 6px;transition:color .2s;align-self:center;}
+.rm-btn:hover{color:var(--red);}
+
+/* ── MAIN APP ─── */
+#app{display:none;}
+.panel{display:none;padding:2rem;max-width:980px;margin:0 auto;animation:fadeUp .3s ease;}
+.panel.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+.panel-title{font-family:'Instrument Serif',serif;font-size:1.75rem;margin-bottom:.22rem;}
+.panel-title em{font-style:italic;color:var(--gold);}
+.panel-sub{color:var(--muted);font-size:.84rem;margin-bottom:1.75rem;line-height:1.65;}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem;}
+.section-label{font-family:'Syne',sans-serif;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);}
+.wallet-section{margin-bottom:1.75rem;}
+
+/* wallet cards */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(285px,1fr));gap:11px;}
+.wcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.2rem;position:relative;transition:box-shadow .2s;}
+.wcard:hover{box-shadow:var(--shadow);}
+.wc-top{display:flex;align-items:center;gap:10px;margin-bottom:.9rem;}
+.wc-chip{width:30px;height:21px;border-radius:4px;flex-shrink:0;}
+.wc-name{font-family:'Syne',sans-serif;font-size:.86rem;font-weight:700;}
+.wc-prog{font-size:.68rem;color:var(--muted);}
+.wc-bal{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.35rem;}
+.wc-pts{font-family:'Instrument Serif',serif;font-size:1.55rem;color:var(--gold);}
+.wc-val{font-size:.73rem;color:var(--green);font-weight:500;}
+.wc-sync{display:flex;align-items:center;gap:7px;margin-top:.7rem;padding-top:.7rem;border-top:1px solid var(--border);}
+.sync-badge{font-size:.65rem;padding:2px 8px;border-radius:10px;font-weight:700;}
+.s-manual{background:var(--bg2);color:var(--muted);border:1px solid var(--border);}
+.s-live{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd);}
+.s-pending{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd);}
+.wc-sync-btn{margin-left:auto;background:none;border:1px solid var(--border2);border-radius:var(--r-xs);padding:.26rem .7rem;font-size:.68rem;font-family:'Figtree',sans-serif;cursor:pointer;transition:all .2s;}
+.wc-sync-btn:hover{background:var(--bg2);}
+.tp-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:.7rem;}
+.tp-chip{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-bd);border-radius:20px;font-size:.62rem;padding:2px 7px;font-weight:600;}
+.wc-edit{position:absolute;top:.7rem;right:.7rem;background:none;border:none;color:var(--muted2);cursor:pointer;font-size:.72rem;padding:3px 7px;border-radius:var(--r-xs);transition:all .2s;}
+.wc-edit:hover{background:var(--bg2);color:var(--text);}
+
+/* loyalty list */
+.loyalty-list{display:flex;flex-direction:column;gap:7px;}
+.lrow{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:.85rem 1.1rem;display:flex;align-items:center;gap:11px;}
+.lrow-icon{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0;}
+.lrow-body{flex:1;}
+.lrow-name{font-weight:500;font-size:.86rem;}
+.lrow-type{font-size:.68rem;color:var(--muted);}
+.lrow-pts{font-family:'Instrument Serif',serif;font-size:1.2rem;color:var(--gold);}
+.lrow-val{font-size:.7rem;color:var(--green);}
+.lrow-sync{background:none;border:1px solid var(--border2);border-radius:var(--r-xs);padding:.28rem .72rem;font-size:.68rem;font-family:'Figtree',sans-serif;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.lrow-sync:hover{background:var(--bg2);}
+.del-btn{background:none;border:none;color:var(--muted2);cursor:pointer;font-size:.88rem;transition:color .2s;}
+.del-btn:hover{color:var(--red);}
+
+/* cash row */
+.cash-row{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem 1.25rem;display:flex;align-items:center;gap:1.5rem;max-width:500px;}
+.cash-big{font-family:'Instrument Serif',serif;font-size:2rem;color:var(--green);}
+.cash-note{font-size:.74rem;color:var(--muted);line-height:1.55;}
+.cash-note a{color:var(--blue);text-decoration:none;}
+
+/* ── SEARCH ─── */
+.stype-tabs{display:flex;gap:6px;margin-bottom:1.4rem;}
+.stype{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:.48rem 1.1rem;font-family:'Figtree',sans-serif;font-size:.81rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;}
+.stype:hover{border-color:var(--border2);}
+.stype.active{background:var(--text);color:var(--bg);border-color:var(--text);}
+.search-form{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.4rem;margin-bottom:1.4rem;}
+.sf-grid{display:grid;gap:11px;}
+.airport-wrap{position:relative;}
+.airport-dropdown{position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-sm);z-index:200;box-shadow:var(--shadow-lg);margin-top:3px;max-height:220px;overflow-y:auto;}
+.airport-opt{padding:.55rem .85rem;cursor:pointer;font-size:.82rem;border-bottom:0.5px solid var(--border);transition:background .15s;}
+.airport-opt:last-child{border-bottom:none;}
+.airport-opt:hover{background:var(--bg2);}
+.airport-opt-city{font-weight:500;color:var(--text);}
+.airport-opt-sub{font-size:.72rem;color:var(--muted);margin-top:1px;}
+.airport-opt-code{font-family:'Instrument Serif',serif;font-size:.9rem;color:var(--gold);float:right;margin-top:2px;}
+.sf-grid.fl5{grid-template-columns:2fr 2fr 1fr 1fr .7fr;}
+.sf-grid.ht5{grid-template-columns:2fr 1fr 1fr 1fr .7fr;}
+.sf-grid.ab6{grid-template-columns:2fr 1fr 1fr 1fr .7fr .7fr;}
+.search-btn{background:var(--text);color:var(--bg);border:none;border-radius:var(--r-sm);padding:.56rem 1.4rem;font-family:'Syne',sans-serif;font-size:.74rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;align-self:flex-end;transition:opacity .2s;white-space:nowrap;}
+.search-btn:hover{opacity:.8;}
+.results-hd{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:.9rem;}
+.results-count{font-family:'Syne',sans-serif;font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);}
+.rcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:box-shadow .2s;margin-bottom:10px;}
+.rcard:hover{box-shadow:var(--shadow);}
+.rcard.best-val{border-color:var(--gold);}
+.rcard-inner{display:grid;grid-template-columns:195px 1fr 265px;}
+.rcard-img{width:195px;height:145px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:2.4rem;flex-shrink:0;}
+.rcard-info{padding:.95rem 1.2rem;}
+.rc-badge{display:inline-block;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:2px 8px;border-radius:20px;margin-bottom:.42rem;}
+.b-best{background:var(--gold-bg);color:var(--gold);border:1px solid var(--gold-bd);}
+.b-pts{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-bd);}
+.rc-name{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;margin-bottom:.18rem;}
+.rc-sub{font-size:.73rem;color:var(--muted);margin-bottom:.42rem;}
+.rc-stars{color:var(--gold);font-size:.7rem;margin-bottom:.42rem;}
+.rc-amenities{display:flex;flex-wrap:wrap;gap:3px;}
+.amenity{font-size:.63rem;background:var(--bg2);border-radius:3px;padding:2px 6px;color:var(--muted);}
+.rc-price{font-family:'Instrument Serif',serif;font-size:1.25rem;margin-top:.6rem;}
+.rc-price span{font-size:.76rem;font-family:'Figtree',sans-serif;color:var(--muted);}
+.rcard-pay{padding:.95rem 1.1rem;border-left:1px solid var(--border);}
+.rcard-pay-title{font-size:.63rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;margin-bottom:.55rem;}
+.pay-opt{background:var(--bg2);border-radius:var(--r-sm);padding:.6rem .78rem;margin-bottom:5px;cursor:pointer;border:1.5px solid transparent;transition:all .2s;}
+.pay-opt:hover{border-color:var(--border2);background:var(--surface);}
+.pay-opt.best-p{border-color:var(--gold);background:var(--gold-bg);}
+.po-lbl{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:2px;}
+.po-main{font-size:.83rem;font-weight:500;}
+.po-detail{font-size:.68rem;color:var(--muted);margin-top:2px;line-height:1.4;}
+.po-tag{display:inline-block;font-size:.58rem;font-weight:700;text-transform:uppercase;color:var(--gold);border:1px solid var(--gold-bd);border-radius:10px;padding:1px 6px;margin-top:3px;}
+.book-btn{width:100%;background:var(--text);color:var(--bg);border:none;border-radius:var(--r-sm);padding:.6rem;font-family:'Syne',sans-serif;font-size:.74rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;margin-top:6px;transition:opacity .2s;}
+.book-btn:hover{opacity:.8;}
+
+/* ── BOOKING GUIDE MODAL ─── */
+.booking-guide{padding:.5rem 0;}
+.bg-progress{display:flex;gap:0;margin-bottom:1.5rem;}
+.bg-step-dot{flex:1;text-align:center;position:relative;}
+.bg-step-dot::before{content:'';position:absolute;top:10px;left:-50%;width:100%;height:2px;background:var(--border2);z-index:0;}
+.bg-step-dot:first-child::before{display:none;}
+.bg-step-dot .dot{width:22px;height:22px;border-radius:50%;background:var(--bg2);border:2px solid var(--border2);display:inline-flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:700;position:relative;z-index:1;transition:all .3s;}
+.bg-step-dot.active .dot{background:var(--text);border-color:var(--text);color:var(--bg);}
+.bg-step-dot.done .dot{background:var(--green);border-color:var(--green);color:#fff;}
+.bg-step-dot .dot-label{font-size:.62rem;color:var(--muted);margin-top:4px;display:block;}
+.bg-step-content{background:var(--bg2);border-radius:var(--r);padding:1.25rem 1.4rem;margin-bottom:1rem;}
+.bgs-title{font-family:'Syne',sans-serif;font-size:.8rem;font-weight:700;margin-bottom:.5rem;}
+.bgs-body{font-size:.84rem;line-height:1.65;color:var(--text);}
+.bgs-body strong{font-weight:600;}
+.bgs-tip{background:var(--gold-bg);border:1px solid var(--gold-bd);border-radius:var(--r-xs);padding:.6rem .85rem;font-size:.75rem;color:var(--gold);margin-top:.75rem;line-height:1.5;}
+.bgs-link{display:inline-flex;align-items:center;gap:6px;background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-bd);border-radius:var(--r-xs);padding:.45rem 1rem;font-size:.78rem;font-weight:500;text-decoration:none;cursor:pointer;transition:all .2s;margin-top:.65rem;}
+.bgs-link:hover{background:var(--blue);color:#fff;}
+.bg-nav{display:flex;gap:8px;margin-top:.75rem;}
+.bg-nav-btn{background:var(--text);color:var(--bg);border:none;border-radius:var(--r-sm);padding:.6rem 1.4rem;font-family:'Syne',sans-serif;font-size:.76rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:opacity .2s;}
+.bg-nav-btn:hover{opacity:.8;}
+.bg-nav-btn.secondary{background:none;color:var(--text);border:1px solid var(--border2);}
+.bg-nav-btn.done-btn{background:var(--green);color:#fff;}
+.conf-ref-input{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-xs);padding:.5rem .75rem;width:100%;font-family:'Figtree',sans-serif;font-size:.84rem;margin-top:.5rem;outline:none;}
+.conf-ref-input:focus{border-color:var(--text);}
+
+/* ── OPTIMIZER ─── */
+.opt-form{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.4rem;margin-bottom:1.4rem;}
+.opt-grid{display:grid;grid-template-columns:2fr 1.2fr 1.2fr;gap:11px;align-items:end;margin-bottom:11px;}
+.or-list{display:flex;flex-direction:column;gap:7px;}
+.or-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:.85rem 1.05rem;display:flex;align-items:center;gap:13px;}
+.or-item.best{border-color:var(--gold);background:var(--gold-bg);}
+.or-rank{font-family:'Instrument Serif',serif;font-size:1.2rem;color:var(--muted2);min-width:20px;}
+.or-item.best .or-rank{color:var(--gold);}
+.or-body{flex:1;}
+.or-name{font-weight:500;font-size:.86rem;margin-bottom:2px;}
+.or-method{font-size:.7rem;color:var(--muted);line-height:1.4;}
+.or-right{text-align:right;}
+.or-net{font-family:'Instrument Serif',serif;font-size:1.1rem;}
+.or-item.best .or-net{color:var(--green);}
+.or-saved{font-size:.68rem;color:var(--green);font-weight:600;}
+.best-tag{display:inline-block;font-size:.58rem;font-weight:700;text-transform:uppercase;color:var(--gold);border:1px solid var(--gold-bd);border-radius:10px;padding:1px 7px;margin-left:5px;}
+
+/* ── LOG ─── */
+.log-form{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.2rem;margin-bottom:1.4rem;display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:10px;align-items:end;}
+.data-table{width:100%;border-collapse:collapse;font-size:.81rem;}
+.data-table th{text-align:left;padding:.48rem .82rem;color:var(--muted);font-weight:600;font-size:.66rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);}
+.data-table td{padding:.58rem .82rem;border-bottom:1px solid var(--border);}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:hover td{background:var(--bg2);}
+.pill{display:inline-block;font-size:.67rem;padding:2px 8px;border-radius:20px;font-weight:600;}
+.pill-gold{background:var(--gold-bg);color:var(--gold);border:1px solid var(--gold-bd);}
+.pill-blue{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-bd);}
+.pill-green{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd);}
+
+/* ── DASHBOARD ─── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:1.4rem;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.05rem 1.2rem;}
+.stat-label{font-family:'Syne',sans-serif;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.32rem;}
+.stat-val{font-family:'Instrument Serif',serif;font-size:1.65rem;}
+.stat-val.gold{color:var(--gold);}
+.stat-val.green{color:var(--green);}
+.stat-sub{font-size:.7rem;color:var(--muted);margin-top:3px;}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:1.4rem;}
+.chart-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.05rem 1.2rem;}
+.chart-title{font-family:'Syne',sans-serif;font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.9rem;}
+.bar-row{display:flex;align-items:center;gap:9px;margin-bottom:8px;}
+.bar-lbl{font-size:.72rem;color:var(--muted);min-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bar-track{flex:1;height:5px;background:var(--bg2);border-radius:3px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:3px;transition:width .6s ease;}
+.bar-val{font-size:.7rem;min-width:46px;text-align:right;font-family:'Instrument Serif',serif;}
+.insight-list{display:flex;flex-direction:column;gap:7px;}
+.insight-item{background:var(--bg2);border-radius:var(--r-sm);padding:.8rem .95rem;display:flex;gap:9px;font-size:.81rem;line-height:1.55;}
+.ins-icon{flex-shrink:0;width:19px;height:19px;border-radius:50%;background:var(--gold-bg);border:1px solid var(--gold-bd);display:flex;align-items:center;justify-content:center;font-size:.66rem;margin-top:2px;}
+
+/* ── MODAL ─── */
+#modal-overlay{display:none;position:fixed;inset:0;background:rgba(26,25,22,.52);z-index:500;align-items:center;justify-content:center;padding:1rem;}
+#modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border-radius:var(--r);padding:1.9rem;max-width:580px;width:100%;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow-lg);animation:fadeUp .22s ease;}
+.modal.wide{max-width:660px;}
+.modal-title{font-family:'Instrument Serif',serif;font-size:1.35rem;margin-bottom:.18rem;}
+.modal-sub{font-size:.81rem;color:var(--muted);margin-bottom:1.4rem;}
+.modal-close{float:right;background:none;border:none;font-size:1.25rem;cursor:pointer;color:var(--muted);margin-top:-.2rem;}
+.modal-section{margin-bottom:1.2rem;}
+.modal-section-label{font-family:'Syne',sans-serif;font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:.55rem;}
+.summary-box{background:var(--bg2);border-radius:var(--r-sm);padding:.95rem 1.05rem;}
+.sb-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;font-size:.82rem;}
+.sb-row.total{border-top:1px solid var(--border2);padding-top:7px;margin-top:4px;font-weight:500;}
+.sb-val{font-family:'Instrument Serif',serif;font-size:1rem;}
+.ps-opt{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.8rem .95rem;cursor:pointer;transition:all .2s;margin-bottom:7px;}
+.ps-opt:hover{border-color:var(--border2);}
+.ps-opt.sel{border-color:var(--text);background:var(--surface);}
+.ps-opt.best{border-color:var(--gold);background:var(--gold-bg);}
+.ps-name{font-weight:500;font-size:.86rem;margin-bottom:2px;}
+.ps-detail{font-size:.71rem;color:var(--muted);line-height:1.4;}
+.ps-value{font-size:.71rem;color:var(--green);font-weight:600;margin-top:3px;}
+.traveler-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.confirm-btn{width:100%;background:var(--text);color:var(--bg);border:none;border-radius:var(--r-sm);padding:.85rem;font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;margin-top:1rem;transition:opacity .2s;}
+.confirm-btn:hover{opacity:.8;}
+.conf-inner{text-align:center;padding:1rem 0;}
+.conf-icon{font-size:2.8rem;margin-bottom:.9rem;}
+.conf-title{font-family:'Instrument Serif',serif;font-size:1.75rem;margin-bottom:.35rem;}
+.conf-ref{font-family:'Syne',sans-serif;font-size:.72rem;color:var(--muted);letter-spacing:.1em;margin-bottom:1.4rem;}
+.conf-details{background:var(--bg2);border-radius:var(--r-sm);padding:1.15rem;text-align:left;margin-bottom:1.2rem;}
+.cd-row{display:flex;justify-content:space-between;font-size:.83rem;margin-bottom:5px;}
+.cd-row:last-child{margin-bottom:0;}
+.cd-key{color:var(--muted);}
+
+/* misc */
+.action-btn{background:none;border:1px solid var(--border2);border-radius:var(--r-xs);padding:.36rem .88rem;font-family:'Figtree',sans-serif;font-size:.77rem;color:var(--text);cursor:pointer;transition:all .2s;}
+.action-btn:hover{background:var(--bg2);}
+.save-btn{background:var(--text);color:var(--bg);border:none;border-radius:var(--r-sm);padding:.56rem 1.4rem;font-family:'Syne',sans-serif;font-size:.74rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:opacity .2s;}
+.save-btn:hover{opacity:.8;}
+.empty-state{text-align:center;padding:2.5rem;color:var(--muted);background:var(--surface);border:1px dashed var(--border2);border-radius:var(--r);font-size:.87rem;}
+
+
+/* ── RECOMMENDATION ENGINE ─── */
+.rec-banner{background:var(--text);color:var(--bg);border-radius:var(--r);padding:1.1rem 1.4rem;margin-bottom:1.25rem;display:grid;grid-template-columns:auto 1fr auto;gap:1rem;align-items:center;}
+.rec-banner-icon{font-size:1.4rem;}
+.rec-banner-body{}
+.rec-banner-label{font-family:'Syne',sans-serif;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;opacity:.6;margin-bottom:.2rem;}
+.rec-banner-title{font-family:'Instrument Serif',serif;font-size:1.1rem;margin-bottom:.2rem;}
+.rec-banner-why{font-size:.76rem;opacity:.75;line-height:1.55;}
+.rec-banner-score{text-align:right;}
+.rec-score-val{font-family:'Instrument Serif',serif;font-size:1.6rem;color:var(--accent,#c8f060);}
+.rec-score-label{font-size:.62rem;opacity:.6;margin-top:1px;}
+.per-card-rec{background:linear-gradient(135deg,var(--green-bg),var(--blue-bg));border:1px solid var(--green-bd);border-radius:0 0 var(--r) var(--r);padding:.7rem 1.1rem;display:flex;align-items:flex-start;gap:.6rem;}
+.pcr-icon{font-size:.9rem;flex-shrink:0;margin-top:1px;}
+.pcr-body{font-size:.76rem;line-height:1.55;color:var(--text);}
+.pcr-body strong{font-weight:600;color:var(--green);}
+.pcr-body .pcr-why{color:var(--muted);font-size:.71rem;margin-top:2px;}
+.score-pill{display:inline-flex;align-items:center;gap:3px;font-family:'Syne',sans-serif;font-size:.62rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px;}
+.score-a{background:#ebf5ef;color:#2d6a4f;border:1px solid rgba(45,106,79,.25);}
+.score-b{background:#e8f0fa;color:#1a4a7a;border:1px solid rgba(26,74,122,.2);}
+.score-c{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd);}
+.score-d{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd);}
+.rec-score-val{font-family:'Instrument Serif',serif;font-size:2rem;line-height:1;text-align:right;}
+.rec-score-label{font-size:.62rem;opacity:.6;text-align:right;margin-top:2px;}
+.rec-banner-score .rec-score-why{font-size:.65rem;opacity:.55;max-width:90px;text-align:right;margin-top:4px;line-height:1.3;}
+.score-c{background:#fef3e2;color:#92600a;border:1px solid rgba(146,96,10,.25);}
+.score-d{background:#fdecea;color:#a0281e;border:1px solid rgba(160,40,30,.2);}
+
+/* ── CPP BADGE ─── */
+.cpp-badge{display:inline-flex;align-items:center;gap:4px;font-size:.62rem;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:6px;}
+.cpp-great{background:#ebf5ef;color:#2d6a4f;border:1px solid rgba(45,106,79,.25);}
+.cpp-good{background:#e8f0fa;color:#1a4a7a;border:1px solid rgba(26,74,122,.2);}
+.cpp-ok{background:#fef3e2;color:#92600a;border:1px solid rgba(146,96,10,.25);}
+.cpp-poor{background:#fdecea;color:#a0281e;border:1px solid rgba(160,40,30,.2);}
+.po-cpp{display:flex;align-items:center;gap:5px;margin-top:3px;font-size:.68rem;color:var(--muted);}
+.po-cpp strong{font-weight:600;}
+.portal-compare{background:var(--blue-bg);border:1px solid var(--blue-bd);border-radius:var(--r-xs);padding:.5rem .75rem;margin-top:5px;font-size:.72rem;color:var(--blue);line-height:1.5;}
+.portal-compare .pc-title{font-weight:700;margin-bottom:3px;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;}
+.portal-compare .pc-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px;}
+.portal-compare .pc-row:last-child{margin-bottom:0;}
+.portal-compare .pc-val{font-family:'Instrument Serif',serif;font-size:.95rem;}
+.portal-compare .pc-note{font-size:.65rem;color:var(--muted);margin-top:3px;}
+
+.loading-dots{display:inline-flex;gap:4px;}
+.loading-dots span{width:7px;height:7px;border-radius:50%;background:var(--muted2);animation:bounce .9s infinite;}
+.loading-dots span:nth-child(2){animation-delay:.15s;}
+.loading-dots span:nth-child(3){animation-delay:.3s;}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
+@media(max-width:720px){
+  .sf-grid.fl5,.sf-grid.ht5,.sf-grid.ab6{grid-template-columns:1fr 1fr;}
+  .rcard-inner{grid-template-columns:1fr;}
+  .rcard-img{width:100%;height:155px;}
+  .rcard-pay{border-left:none;border-top:1px solid var(--border);}
+  .stats-row{grid-template-columns:1fr 1fr;}
+  .chart-grid{grid-template-columns:1fr;}
+  .log-form{grid-template-columns:1fr 1fr;}
+  .opt-grid{grid-template-columns:1fr 1fr;}
+  .tnav-group .tnav{padding:.4rem .55rem;font-size:.75rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ DEV BANNER ══ -->
+<div id="dev-banner">
+  <div class="db-text">
+    <strong>Developer setup needed:</strong>
+    Plaid covers <em>bank balances &amp; transactions only</em> — not rewards points (points live in separate loyalty systems).
+    Set <code>PLAID_CLIENT_ID</code> + <code>PLAID_SECRET</code> in the script block for bank sync.
+    For points auto-sync, see <strong>BACK-003</strong> (AwardWallet partner API).
+  </div>
+  <button class="db-btn" onclick="showPlaidModal()">Configure Plaid →</button>
+  <button class="db-x" onclick="this.parentElement.style.display='none'">×</button>
+</div>
+
+<!-- ══ ONBOARDING ══ -->
+<div id="onboarding">
+<div class="ob-inner">
+  <div class="ob-logo">Pay<span>Max</span></div>
+  <div class="ob-progress" id="ob-prog"></div>
+
+  <div class="ob-step active" id="ob-1">
+    <div class="ob-title">Your <em>smartest</em><br>payment optimizer</div>
+    <p class="ob-sub">PayMax finds the highest-value way to pay for anything — comparing cards, points, transfer partners, and cash side by side. Set up in 4 quick steps.</p>
+    <button class="ob-next-btn" onclick="obGo(2)">Get started →</button>
+  </div>
+
+  <div class="ob-step" id="ob-2">
+    <div class="ob-title">Select your <em>credit cards</em></div>
+    <p class="ob-sub">Tap to select. Earn rates, transfer partners, and point valuations are pre-loaded from our card database — no manual entry needed.</p>
+    <div class="card-select-grid" id="card-sel-grid"></div>
+    <button class="ob-next-btn" onclick="obGo(3)">Next →</button>
+    <button class="ob-skip" onclick="obGo(3)">Skip</button>
+  </div>
+
+  <div class="ob-step" id="ob-3">
+    <div class="ob-title">Enter your <em>points balances</em></div>
+    <p class="ob-sub">Open each card's portal to check your current balance. Once AwardWallet API is live (see backlog), these will sync automatically.</p>
+    <div class="plaid-note" style="margin-bottom:1rem;">
+      <strong>Why isn't Plaid pulling these?</strong><br>
+      Plaid connects to banking infrastructure — it can read your account balance, credit limit, and transactions. But rewards points live in separate loyalty systems (Chase UR, Amex MR, etc.) that are outside Plaid's scope. Auto-sync of points requires the <strong>AwardWallet partner API</strong> (backlog item <strong>BACK-003</strong>). Until then, enter balances manually below.
+    </div>
+    <div id="ob-bal-list"></div>
+    <div style="display:flex;align-items:center;gap:1rem;margin-top:1rem;">
+      <button class="ob-next-btn" onclick="obGo(4)">Next →</button>
+      <button class="ob-skip" onclick="obGo(2)">← Back</button>
+    </div>
+  </div>
+
+  <div class="ob-step" id="ob-4">
+    <div class="ob-title">Add <em>loyalty programs</em></div>
+    <p class="ob-sub">Miles, hotel points, or any other programs not tied to a card above. Select a program to see its portal link and enter your balance.</p>
+    <div id="ob-loy-list"></div>
+    <button class="add-btn-sm" onclick="obAddLoyalty()">+ Add loyalty program</button>
+    <div style="margin-top:1.5rem;">
+      <button class="ob-next-btn" onclick="obGo(5)">Next →</button>
+      <button class="ob-skip" onclick="obGo(3)">← Back</button>
+    </div>
+  </div>
+
+  <div class="ob-step" id="ob-5">
+    <div class="ob-title">Cash & <em>bank balance</em></div>
+    <p class="ob-sub">How much cash is available? Plaid can sync this automatically from your bank once configured.</p>
+    <div style="max-width:230px;margin-bottom:1rem;">
+      <div class="fl"><label>Available cash ($)</label><input type="number" id="ob-cash" value="5000"></div>
+    </div>
+    <div class="plaid-note">
+      <strong>🏦 Auto-sync with Plaid (pending BACK-002):</strong> After adding keys (<code>PLAID_CLIENT_ID</code>, <code>PLAID_SECRET</code>), connect your bank via OAuth and this balance syncs automatically. Plaid supports 12,000+ US institutions.
+    </div>
+    <div style="display:flex;align-items:center;gap:1rem;margin-top:1.5rem;">
+      <button class="ob-next-btn" onclick="obFinish()">Launch PayMax →</button>
+      <button class="ob-skip" onclick="obGo(4)">← Back</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-logo">PayMax</div>
+    <div class="tnav-group">
+      <button class="tnav active" onclick="showPanel('wallet')">Wallet</button>
+      <button class="tnav" onclick="showPanel('search')">Travel Search</button>
+      <button class="tnav" onclick="showPanel('optimizer')">Optimizer</button>
+      <button class="tnav" onclick="showPanel('log')">Log</button>
+      <button class="tnav" onclick="showPanel('dashboard')">Dashboard</button>
+    </div>
+    <div class="wallet-pill" id="wallet-pill" onclick="showPanel('wallet')">0 pts</div>
+  </div>
+
+  <div class="panel active" id="panel-wallet">
+    <div class="panel-title">Your <em>wallet</em></div>
+    <p class="panel-sub">All your payment instruments. Use "Open portal" to check and update balances — or configure Plaid for automatic bank sync.</p>
+    <div class="wallet-section">
+      <div class="section-head"><div class="section-label">Credit Cards</div><button class="action-btn" onclick="openAddCardModal()">+ Add card</button></div>
+      <div class="cards-grid" id="wallet-cards"></div>
+    </div>
+    <div class="wallet-section">
+      <div class="section-head"><div class="section-label">Loyalty Programs</div><button class="action-btn" onclick="openAddLoyaltyModal()">+ Add program</button></div>
+      <div class="loyalty-list" id="wallet-loyalty"></div>
+    </div>
+    <div class="wallet-section">
+      <div class="section-head"><div class="section-label">Cash & Bank</div></div>
+      <div class="cash-row">
+        <div>
+          <div class="cash-big" id="cash-display">$5,000</div>
+          <div class="cash-note">Manual · <a href="#" onclick="showPlaidModal();return false;">Connect bank via Plaid →</a></div>
+        </div>
+        <div style="flex:1;max-width:170px;">
+          <div class="fl"><label>Update balance</label><input type="number" id="wallet-cash" onchange="updateCash(this.value)"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-search">
+    <div class="panel-title">Travel <em>search</em></div>
+    <p class="panel-sub">Search flights, hotels, and rentals. PayMax evaluates your entire wallet against every result and shows the optimal payment path — with a step-by-step booking guide.</p>
+    <div class="stype-tabs">
+      <button class="stype active" onclick="setSearchType('flight',this)">✈ Flights</button>
+      <button class="stype" onclick="setSearchType('hotel',this)">🏨 Hotels</button>
+      <button class="stype" onclick="setSearchType('airbnb',this)">🏠 Rentals</button>
+    </div>
+    <div class="search-form" id="search-form-area"></div>
+    <div id="search-results-area"></div>
+  </div>
+
+  <div class="panel" id="panel-optimizer">
+    <div class="panel-title">Payment <em>optimizer</em></div>
+    <p class="panel-sub">Enter any purchase to rank every payment option by true net cost — card earn, points, transfer partners, and cash.</p>
+    <div class="opt-form">
+      <div class="opt-grid">
+        <div class="fl"><label>Description</label><input type="text" id="opt-desc" placeholder="e.g. Flight to Tokyo"></div>
+        <div class="fl"><label>Amount ($)</label><input type="number" id="opt-amount" placeholder="0.00"></div>
+        <div class="fl"><label>Category</label>
+          <select id="opt-cat">
+            <option value="travel">Travel</option><option value="dining">Dining</option>
+            <option value="grocery">Grocery</option><option value="gas">Gas</option>
+            <option value="entertainment">Entertainment</option><option value="other" selected>Other</option>
+          </select>
+        </div>
+      </div>
+      <button class="search-btn" onclick="runOptimizer()">Analyze →</button>
+    </div>
+    <div id="opt-results"></div>
+  </div>
+
+  <div class="panel" id="panel-log">
+    <div class="panel-title">Expense <em>log</em></div>
+    <p class="panel-sub">Track spending and payment choices. Feeds your dashboard insights.</p>
+    <div class="log-form">
+      <div class="fl"><label>Description</label><input type="text" id="log-desc" placeholder="Dinner, flight…"></div>
+      <div class="fl"><label>Amount ($)</label><input type="number" id="log-amount"></div>
+      <div class="fl"><label>Category</label>
+        <select id="log-cat">
+          <option value="travel">Travel</option><option value="dining">Dining</option>
+          <option value="grocery">Grocery</option><option value="gas">Gas</option>
+          <option value="entertainment">Entertainment</option><option value="other">Other</option>
+        </select>
+      </div>
+      <div class="fl"><label>Paid with</label><select id="log-pay"></select></div>
+      <button class="save-btn" onclick="addLog()">Add</button>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="data-table"><thead><tr>
+        <th>Date</th><th>Description</th><th>Category</th><th>Amount</th><th>Payment</th><th>Value earned</th><th></th>
+      </tr></thead><tbody id="log-tbody"></tbody></table>
+      <div id="log-empty" class="empty-state" style="display:none;">No expenses yet.</div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-dashboard">
+    <div class="panel-title">Spending <em>dashboard</em></div>
+    <p class="panel-sub">Month-to-date overview — rewards earned, spend patterns, and optimization insights.</p>
+    <div id="dash-content"></div>
+  </div>
+</div>
+
+<div id="modal-overlay" onclick="closeModal(event)"><div class="modal" id="modal-inner"></div></div>
+
+<script>
+/* ═══════════════════════════════════════════════════
+   DEVELOPER CONFIG — see backlog below
+   ═══════════════════════════════════════════════════
+   BACK-001: Plaid card balance/transaction sync
+             Keys: PLAID_CLIENT_ID, PLAID_SECRET
+             Docs: https://plaid.com/docs/
+             Note: Plaid does NOT provide rewards points balances.
+             Points live in separate loyalty systems outside Plaid.
+
+   BACK-002: Plaid bank balance auto-sync
+             Same keys as above. Implement createLinkToken() flow.
+
+   BACK-003: AwardWallet partner API — loyalty points auto-sync
+             Covers 700+ programs including all major airlines/hotels.
+             Requires business partnership: partnerships@awardwallet.com
+             Replace AWARDWALLET_KEY below once approved.
+
+   BACK-004: Live travel search APIs
+             Flights: Amadeus API (developers.amadeus.com)
+             Hotels: Google Hotels API (GCP Travel Partner account)
+             Rentals: Airbnb has no public API; use direct URL params.
+
+   BACK-005: Price trend analysis & "wait vs buy now" recommendations
+             Data source: Google Flights Price Insights API (or scrape
+             via Amadeus Analytics). Show historical fare trends for a
+             route + calendar of cheapest dates.
+             UX: Optional opt-in prompt before each search —
+             "Would you like price trend analysis? (adds ~5s)"
+             NOT enabled by default per product spec.
+
+   BACK-006: Spending habit analysis for smarter points recommendations
+             E.g. if user flies JFK→BOM every December, warn against
+             redeeming those points for a lesser-value purchase now.
+             Logic: analyze log history for recurring high-value
+             redemption patterns; surface as a soft warning when
+             user is about to spend points on a lower-CPP purchase.
+             UX: Optional opt-in in Settings — "Consider future travel
+             patterns in recommendations" — OFF by default per spec.
+
+   BACK-008: Clarify Optimizer vs Travel Search distinction
+             Current overlap confuses users. Proposed reframe:
+             - Optimizer → rename "Smart Pay" — for any known purchase
+               (grocery, dining, Amazon, etc.). Make non-travel categories
+               more prominent. Add quick-entry shortcuts for common spends.
+             - Travel Search → rename "Trip Planner" — discovery tool,
+               you don't know the price yet. Emphasize the meta-search
+               angle: "find options, then see how to pay for each."
+             Consider adding a unified entry point: "What are you buying?"
+             that routes to the right tool automatically.
+
+   BACK-007: Status milestone tracking & card/flight recommendations
+             Some flights only earn EQM/EQS/EQD on paid tickets, not
+             awards. Some credit cards accelerate status earning.
+             Logic:
+             - User inputs current status + target (e.g. UA Silver→Gold)
+             - System tracks EQM-eligible vs non-eligible purchases
+             - Warns when redeeming points would forfeit status miles
+             - Recommends which card maximizes both rewards AND status
+             - Flags flights not eligible for status miles in search results
+             UX: Optional opt-in prompt — "Factor in status milestones?"
+             OFF by default per spec.
+
+   ════════════════════════════════════════════════════
+   COMPETITIVE ANALYSIS — derived from research March 2026
+   Sources: NerdWallet, CNBC, FrequentMiler, TPG, AwardFares blog,
+            One Mile at a Time, US News, Thrifty Traveler
+   ════════════════════════════════════════════════════
+
+   COMPETITORS ANALYSED:
+   1. point.me         — Award flight search + step-by-step booking guides
+   2. AwardWallet      — Loyalty balance tracker, 679+ programs
+   3. MaxRewards       — Card optimizer + auto-activates card offers
+   4. Kudos            — AI smart wallet, real-time card recommendations
+   5. CardPointers     — Card optimizer, 5,000 cards, Chrome extension
+   6. Seats.aero       — Fast award search, date flexibility, alerts
+   7. Roame            — Multi-airport/date award search, flexible discovery
+   8. ExpertFlyer      — Seat alerts, upgrade tracking, specific flight intel
+   9. TPG App          — Editorial + rewards calculator + deal alerts
+  10. Uthrive          — Personalized card recommendations by spend habits
+
+   ════════════════════════════════════════════════════
+   COMPETITIVE GAP ANALYSIS vs PayMax
+   ════════════════════════════════════════════════════
+
+   WHERE COMPETITORS ARE AHEAD OF PAYMAX TODAY:
+
+   [point.me]
+   - Real-time live award availability across 30+ loyalty programs & 150+ airlines
+     (PayMax uses mock data — BACK-004 addresses this partially)
+   - "Point.me Pick" editorial recommendation per search result
+   - Phantom award filtering (hides unavailable results competitors show)
+   - Concierge booking service ($200/person) — human experts do the booking
+   - Transfer bonus alerts — notifies when programs offer 20-30% transfer bonuses
+   - Amex and Bilt partnership for free embedded access (distribution strategy)
+   - Multi-date browsing (PayMax only searches a fixed date)
+   Gap priority: HIGH — real award data is the core product gap
+
+   [AwardWallet]
+   - Tracks 679+ loyalty programs including retail, dining, car rental
+   - Browser extension for auto-login to loyalty portals
+   - Expiration date tracking with alerts before points expire
+   - Historical balance data (trend over time)
+   - Family/household account management (track others' balances)
+   - Free tier + $30/yr Plus; no credentials sold
+   Gap priority: HIGH — expiry alerts and 679-program coverage vs our 29
+
+   [MaxRewards]
+   - Auto-activates Amex Offers, Chase Offers, Citi Merchant Offers, BankAmeriDeals
+     without user needing to manually click "activate" (Gold feature)
+   - Real-time "best card at nearby merchant" using GPS location
+   - Credit score monitoring across all issuers in one view
+   - Credit utilization tracking per card
+   - Welcome bonus / sign-up bonus tracker with spend countdown
+   - Recurring charge detection and subscription management
+   - Bill autopay status tracking
+   Gap priority: HIGH — offer auto-activation alone is a major value driver
+
+   [Kudos]
+   - Browser extension: recommends best card at checkout on 3,000+ merchants
+   - "Dream Wallet" AI feature: analyzes spending and recommends which NEW
+     cards to get based on your habits (card acquisition advisor)
+   - Works at point-of-sale in real time (not just retrospective analysis)
+   Gap priority: MEDIUM — browser extension / POS angle is a different surface
+
+   [CardPointers]
+   - Covers 5,000 credit cards across 258 countries (far wider than PayMax top-20)
+   - Chrome extension adds award pricing inline on Google Flights results
+   - Annual fee tracking + card renewal recommendations (keep vs cancel logic)
+   - Personalized new card recommendations based on existing wallet gaps
+   Gap priority: MEDIUM — annual fee / renewal logic is a clear gap
+
+   [Seats.aero]
+   - Fastest award search (seconds vs point.me's minutes)
+   - Multi-date search: find availability across flexible date windows
+   - Region-wide search: "anywhere in Europe in October"
+   - Pre-cached + live hybrid: fast results with refresh option
+   - Strong for premium cabin hunting (Lufthansa First Class, etc.)
+   Gap priority: HIGH for travel search tab (BACK-004 prerequisite)
+
+   [Roame]
+   - Multi-airport origin/destination search (e.g. NYC area = JFK+EWR+LGA)
+   - Multi-cabin class search in one query
+   - Free community tier available
+   Gap priority: MEDIUM — improves search UX once live data exists
+
+   [ExpertFlyer]
+   - Real-time seat map + open seat alerts for specific flights
+   - Upgrade waitlist tracking
+   - Fare class / fare code intelligence (crucial for status earning)
+   Gap priority: MEDIUM — relevant to BACK-007 (status milestones)
+
+   WHERE PAYMAX IS AHEAD OF ALL COMPETITORS TODAY:
+   - True net cost optimizer: cash + points + transfer partner in one ranked view
+     (no competitor does all three simultaneously with CPP scoring)
+   - Portal vs transfer comparison: shows Chase Travel vs Aeroplan side-by-side
+     with CPP delta (unique to PayMax)
+   - Mixed cash+points calculation: partial award logic with shortfall handling
+     (competitors typically show full-award-only or cash-only)
+   - 100-point value scoring with plain-English "PayMax recommends" rationale
+   - Step-by-step guided booking with URL deep-linking (similar to point.me
+     but without requiring a subscription)
+   - Integrated expense log + dashboard connecting spending to rewards earned
+   - Backlog-driven architecture: designed for API integration from day one
+
+   ════════════════════════════════════════════════════
+   NEW BACKLOG ITEMS FROM COMPETITIVE ANALYSIS
+   ════════════════════════════════════════════════════
+
+   BACK-009: Real-time live award availability (from Seats.aero or point.me API)
+             Current state: mock data only.
+             Requirement: integrate live award seat data for flights.
+             Recommended approach: Seats.aero API (faster, cheaper than point.me)
+             + point.me API for step-by-step guides and phantom filtering.
+             Also needed: multi-date search (search ±3 days around target date),
+             multi-airport search (JFK/EWR/LGA treated as NYC),
+             cabin class filter (economy / business / first in same search).
+             Priority: HIGH — without live data, travel search is demo-only.
+
+   BACK-010: Points expiration tracking + alerts
+             AwardWallet's core value prop. Many users lose points to expiry.
+             Requirement: for each loyalty program in wallet, store expiry policy
+             (activity-based vs fixed-date) and surface warnings:
+             - Red alert: expires within 30 days
+             - Amber alert: expires within 90 days
+             - Suggestion: "Make a small purchase to reset your expiry clock"
+             Data source: manually maintained expiry rules per program, or
+             partner with AwardWallet (BACK-003).
+             Priority: HIGH — low build cost, high user value.
+
+   BACK-011: Transfer bonus alerts
+             Airlines and bank programs periodically offer 20-40% transfer bonuses
+             (e.g. "Transfer Chase UR to United and get 30% more miles through Dec 31").
+             Requirement: maintain a feed of active transfer bonuses and surface
+             them in the optimizer and wallet when a relevant transfer is being
+             considered. Data source: TPG/Doctor of Credit RSS, or manual curation.
+             UX: banner on wallet card + optimizer nudge "Transfer bonus active!"
+             Priority: HIGH — directly increases redemption value, low complexity.
+
+   BACK-012: Credit card offer auto-activation
+             MaxRewards' killer feature. Amex Offers, Chase Offers, Citi Merchant
+             Offers, BankAmeriDeals require manual activation — most users forget.
+             Requirement: via Plaid or direct card issuer connections, surface
+             available offers per card and provide one-tap activation.
+             Note: Auto-activation (MaxRewards Gold) requires deeper API access
+             than Plaid provides. May require direct issuer partnerships or
+             browser extension approach (see BACK-013).
+             Priority: HIGH — significant cash value left on table without this.
+
+   BACK-013: Browser extension / checkout optimizer
+             Kudos and CardPointers both operate at point-of-sale via Chrome ext.
+             Requirement: Chrome/Safari extension that detects merchant at checkout,
+             looks up category, and surfaces best card to use in a small overlay.
+             Also: add award pricing inline on Google Flights (like CardPointers).
+             This is a separate product surface from the main app.
+             Priority: MEDIUM — high distribution value, significant build effort.
+
+   BACK-014: Welcome bonus / sign-up bonus tracker
+             MaxRewards feature. When a new card is added, user can input the
+             welcome bonus requirement (e.g. "spend $5,000 in 3 months for 75k pts").
+             Requirement: track spend toward the bonus per card, show countdown
+             timer, alert if on track / at risk of missing the deadline.
+             Priority: MEDIUM — high value for active churners, low complexity.
+
+   BACK-015: Annual fee tracking + card renewal recommendations
+             CardPointers feature. Each year, surface a "keep or cancel?" analysis
+             per card based on: annual fee vs benefits used vs rewards earned
+             in the past 12 months.
+             E.g. "Your Amex Platinum cost $695. You used $400 in travel credits,
+             $120 dining credit, earned $340 in rewards. Net value: +$165. Keep."
+             Priority: MEDIUM — high retention value, requires 12 months of data.
+
+   BACK-016: Expanded card database (beyond top 20)
+             CardPointers covers 5,000 cards. PayMax has 20.
+             Requirement: expand to full US card database with earn rates, benefits,
+             annual fees, and transfer partners. Source: crowdsourced + TPG/NerdWallet
+             data partnership, or build a maintainable JSON card registry.
+             Priority: MEDIUM — current top-20 covers ~80% of users; expand iteratively.
+
+   BACK-017: "Dream Wallet" — new card recommendations
+             Kudos feature. Analyze user's spending patterns across categories and
+             identify cards NOT in their wallet that would earn more.
+             E.g. "You spend $800/mo on groceries. Adding Amex Gold would earn
+             4× instead of your current 1×, worth ~$384/yr extra."
+             UX: Optional section in Dashboard — "Cards you're missing out on."
+             Priority: LOW-MEDIUM — requires card database (BACK-016) first.
+
+   BACK-018: Hotel award search (Rooms.aero / MaxMyPoint integration)
+             point.me is flights-only. Rooms.aero and MaxMyPoint fill the hotel gap.
+             Requirement: live award hotel availability for Hyatt, Hilton, Marriott,
+             IHG. Surface points cost per night vs cash rate = CPP per hotel booking.
+             Priority: MEDIUM — completes the travel search picture alongside BACK-009.
+
+   BACK-019: GPS-based real-time card recommendation
+             MaxRewards feature. When user is near a merchant, push notification
+             or widget suggests which card to use.
+             Requirement: location permission + merchant category lookup + card
+             earn rate comparison surfaced as a notification or lock-screen widget.
+             Mobile app required (current product is web-only).
+             Priority: LOW — requires native mobile app (significant platform shift).
+
+   BACK-020: Family / household wallet management
+             AwardWallet feature. Track points balances for multiple family members
+             in one view. Useful for pooling points toward a family trip.
+             Requirement: multi-user profiles under one account, shared dashboard
+             showing combined household points wealth and optimal redemption paths.
+             Priority: LOW — valuable for power users, complex auth/data model.
+
+   ════════════════════════════════════════════════════
+   PRIORITISED ROADMAP RECOMMENDATION
+   ════════════════════════════════════════════════════
+   Phase 1 — Close critical gaps (foundation):
+     BACK-009 (live award data), BACK-010 (expiry alerts),
+     BACK-011 (transfer bonus alerts), BACK-003 (AwardWallet API)
+
+   Phase 2 — Differentiate on intelligence:
+     BACK-012 (offer auto-activation), BACK-014 (SUB tracker),
+     BACK-015 (annual fee / keep-cancel), BACK-005 (price trends)
+
+   Phase 3 — Expand surface area:
+     BACK-013 (browser extension), BACK-016 (card database),
+     BACK-017 (dream wallet), BACK-018 (hotel award search)
+
+   Phase 4 — Platform & scale:
+     BACK-019 (GPS/mobile), BACK-020 (family wallet),
+     BACK-006 (habit analysis), BACK-007 (status milestones)
+   ═══════════════════════════════════════════════════ */
+const CFG = {
+  PLAID_CLIENT_ID: 'YOUR_PLAID_CLIENT_ID',   // BACK-001 / BACK-002
+  PLAID_SECRET:    'YOUR_PLAID_SECRET',        // BACK-001 / BACK-002
+  PLAID_ENV:       'sandbox',
+  AWARDWALLET_KEY: 'YOUR_AWARDWALLET_KEY',     // BACK-003
+  PLAID_READY: false,
+  // Set this to your Netlify site URL after deploying (e.g. 'https://paymax.netlify.app')
+  // Leave as empty string to use relative URLs (works when hosted on Netlify)
+  BACKEND_URL: '',
+};
+
+/* ═══════════════════════════════════════════════════
+   TOP 20 US CREDIT CARDS
+   ═══════════════════════════════════════════════════ */
+const TOP_CARDS = [
+  {id:'csr', name:'Chase Sapphire Reserve',    network:'Visa',  program:'Chase Ultimate Rewards',  color:'#1a3a5c',pv:1.5, rates:{travel:3,dining:3,grocery:1,gas:1,entertainment:1,other:1},  fee:550},
+  {id:'csp', name:'Chase Sapphire Preferred',  network:'Visa',  program:'Chase Ultimate Rewards',  color:'#2255a4',pv:1.25,rates:{travel:3,dining:3,grocery:1,gas:1,entertainment:1,other:1},  fee:95},
+  {id:'cfu', name:'Chase Freedom Unlimited',   network:'Visa',  program:'Chase Ultimate Rewards',  color:'#1a5276',pv:1.5, rates:{travel:3,dining:3,grocery:1,gas:1,entertainment:1,other:1.5},fee:0},
+  {id:'ink', name:'Chase Ink Business Pref.',  network:'Visa',  program:'Chase Ultimate Rewards',  color:'#1f4e79',pv:1.5, rates:{travel:3,dining:1,grocery:1,gas:1,entertainment:1,other:1},  fee:95},
+  {id:'axp', name:'Amex Platinum',             network:'Amex',  program:'Amex Membership Rewards', color:'#8c8c8c',pv:1.4, rates:{travel:5,dining:1,grocery:1,gas:1,entertainment:1,other:1},  fee:695},
+  {id:'axg', name:'Amex Gold',                 network:'Amex',  program:'Amex Membership Rewards', color:'#c5a028',pv:1.4, rates:{travel:3,dining:4,grocery:4,gas:1,entertainment:1,other:1},  fee:250},
+  {id:'axbg',name:'Amex Business Gold',        network:'Amex',  program:'Amex Membership Rewards', color:'#a07820',pv:1.4, rates:{travel:4,dining:4,grocery:1,gas:4,entertainment:1,other:1},  fee:295},
+  {id:'vx',  name:'Capital One Venture X',     network:'Visa',  program:'Capital One Miles',       color:'#d03027',pv:1.0, rates:{travel:10,dining:2,grocery:1,gas:1,entertainment:1,other:2},  fee:395},
+  {id:'sav', name:'Capital One Savor',         network:'MC',    program:'Capital One Miles',       color:'#b02020',pv:1.0, rates:{travel:1,dining:4,grocery:3,gas:1,entertainment:4,other:1},  fee:95},
+  {id:'cp',  name:'Citi Premier',              network:'MC',    program:'Citi ThankYou Points',    color:'#003087',pv:1.3, rates:{travel:3,dining:3,grocery:3,gas:3,entertainment:1,other:1},  fee:95},
+  {id:'blt', name:'Bilt Mastercard',           network:'MC',    program:'Bilt Rewards',            color:'#1c1c1c',pv:1.5, rates:{travel:3,dining:2,grocery:1,gas:1,entertainment:1,other:1},  fee:0},
+  {id:'usr', name:'US Bank Altitude Reserve',  network:'Visa',  program:'US Bank Altitude Points', color:'#002868',pv:1.5, rates:{travel:5,dining:3,grocery:1,gas:1,entertainment:1,other:1},  fee:400},
+  {id:'bpr', name:'BofA Premium Rewards',      network:'Visa',  program:'BofA Rewards',            color:'#cc0000',pv:1.0, rates:{travel:2,dining:2,grocery:1,gas:1,entertainment:1,other:1.5},fee:95},
+  {id:'wfa', name:'Wells Fargo Autograph',     network:'Visa',  program:'Wells Fargo Rewards',     color:'#d71e28',pv:1.0, rates:{travel:3,dining:3,grocery:1,gas:3,entertainment:3,other:1},  fee:0},
+  {id:'hyc', name:'World of Hyatt Card',       network:'Visa',  program:'World of Hyatt',          color:'#3d5a80',pv:1.7, rates:{travel:2,dining:2,grocery:1,gas:1,entertainment:1,other:1},  fee:95},
+  {id:'hil', name:'Hilton Honors Surpass',     network:'Amex',  program:'Hilton Honors',           color:'#003087',pv:0.6, rates:{travel:7,dining:5,grocery:3,gas:3,entertainment:3,other:3},  fee:150},
+  {id:'dlt', name:'Delta SkyMiles Gold Amex',  network:'Amex',  program:'Delta SkyMiles',          color:'#e31837',pv:1.2, rates:{travel:3,dining:2,grocery:1,gas:1,entertainment:1,other:1},  fee:150},
+  {id:'ual', name:'United Explorer Card',      network:'Visa',  program:'United MileagePlus',      color:'#0033a0',pv:1.35,rates:{travel:2,dining:2,grocery:1,gas:1,entertainment:1,other:1},  fee:95},
+  {id:'mar', name:'Marriott Bonvoy Boundless', network:'Visa',  program:'Marriott Bonvoy',         color:'#8b1a2c',pv:0.7, rates:{travel:6,dining:2,grocery:2,gas:2,entertainment:2,other:2},  fee:95},
+  {id:'dis', name:'Discover it Cash Back',     network:'Disc',  program:'Discover Cashback',       color:'#f76f20',pv:1.0, rates:{travel:1,dining:1,grocery:1,gas:1,entertainment:1,other:1},  fee:0},
+];
+
+/* ═══════════════════════════════════════════════════
+   ALL MAJOR US LOYALTY PROGRAMS
+   ═══════════════════════════════════════════════════ */
+const ALL_LOYALTY = [
+  // Airlines
+  {name:'United MileagePlus',        type:'airline', pv:1.35, url:'https://www.united.com/en/us/fly/mileageplus.html'},
+  {name:'Delta SkyMiles',            type:'airline', pv:1.2,  url:'https://www.delta.com/us/en/skymiles/overview'},
+  {name:'American AAdvantage',       type:'airline', pv:1.5,  url:'https://www.aa.com/loyalty/accrual/earnMiles.do'},
+  {name:'Southwest Rapid Rewards',   type:'airline', pv:1.5,  url:'https://www.southwest.com/rapid-rewards/'},
+  {name:'JetBlue TrueBlue',         type:'airline', pv:1.3,  url:'https://trueblue.jetblue.com/'},
+  {name:'Alaska Mileage Plan',       type:'airline', pv:1.8,  url:'https://www.alaskaair.com/mileage-plan'},
+  {name:'Air Canada Aeroplan',       type:'airline', pv:1.55, url:'https://www.aircanada.com/us/en/aco/home/aeroplan.html'},
+  {name:'British Airways Avios',     type:'airline', pv:1.4,  url:'https://www.britishairways.com/en-us/executive-club'},
+  {name:'Singapore KrisFlyer',       type:'airline', pv:1.6,  url:'https://www.singaporeair.com/en_UK/us/ppsclub-krisflyer/'},
+  {name:'Air France Flying Blue',    type:'airline', pv:1.4,  url:'https://www.airfranceklm.com/en/flying-blue'},
+  {name:'Turkish Miles&Smiles',      type:'airline', pv:1.4,  url:'https://www.turkishairlines.com/en-us/miles-smiles/'},
+  {name:'ANA Mileage Club',          type:'airline', pv:1.75, url:'https://www.ana.co.jp/en/us/amc/'},
+  {name:'Avianca LifeMiles',         type:'airline', pv:1.55, url:'https://www.lifemiles.com/'},
+  {name:'Iberia Plus Avios',         type:'airline', pv:1.4,  url:'https://www.iberia.com/us/iberia-plus/'},
+  {name:'Emirates Skywards',         type:'airline', pv:1.1,  url:'https://www.emirates.com/us/english/skywards/'},
+  {name:'Virgin Atlantic Flying Club',type:'airline',pv:1.5, url:'https://flywith.virginatlantic.com/gb/en/flying-club.html'},
+  {name:'Frontier Miles',            type:'airline', pv:0.9,  url:'https://www.flyfrontier.com/ways-to-fly/miles/'},
+  {name:'Spirit Free Spirit',        type:'airline', pv:0.7,  url:'https://www.spirit.com/freeSpirit'},
+  // Hotels
+  {name:'World of Hyatt',            type:'hotel',   pv:1.7,  url:'https://world.hyatt.com/'},
+  {name:'Marriott Bonvoy',           type:'hotel',   pv:0.7,  url:'https://www.marriott.com/loyalty/mergedLoyaltyProgram.mi'},
+  {name:'Hilton Honors',             type:'hotel',   pv:0.6,  url:'https://www.hilton.com/en/hilton-honors/'},
+  {name:'IHG One Rewards',           type:'hotel',   pv:0.5,  url:'https://www.ihg.com/onerewards/content/us/en/home'},
+  {name:'Wyndham Rewards',           type:'hotel',   pv:1.1,  url:'https://www.wyndhamhotels.com/wyndham-rewards'},
+  {name:'Best Western Rewards',      type:'hotel',   pv:0.6,  url:'https://www.bestwestern.com/en_US/best-western-rewards.html'},
+  {name:'Choice Privileges',         type:'hotel',   pv:0.6,  url:'https://www.choicehotels.com/choice-privileges'},
+  {name:'Radisson Rewards',          type:'hotel',   pv:0.4,  url:'https://www.radissonhotels.com/en-us/radisson-rewards'},
+  // Other
+  {name:'Amtrak Guest Rewards',      type:'other',   pv:2.5,  url:'https://www.amtrak.com/amtrak-guest-rewards'},
+  {name:'Hertz Gold Plus Rewards',   type:'other',   pv:0.8,  url:'https://www.hertz.com/rentacar/member/hertzgoldplusrewards/'},
+  {name:'National Emerald Club',     type:'other',   pv:0.9,  url:'https://www.nationalcar.com/en/emerald-club.html'},
+];
+
+/* ═══════════════════════════════════════════════════
+   TRANSFER PARTNERS DATABASE
+   ═══════════════════════════════════════════════════ */
+const TP = {
+  'Chase Ultimate Rewards':[
+    {name:'United MileagePlus',ratio:1,pv:1.35},{name:'Southwest Rapid Rewards',ratio:1,pv:1.5},
+    {name:'British Airways Avios',ratio:1,pv:1.4},{name:'Air Canada Aeroplan',ratio:1,pv:1.55},
+    {name:'Singapore KrisFlyer',ratio:1,pv:1.6},{name:'World of Hyatt',ratio:1,pv:1.7},
+    {name:'Marriott Bonvoy',ratio:1,pv:0.7},{name:'IHG One Rewards',ratio:1,pv:0.5},
+  ],
+  'Amex Membership Rewards':[
+    {name:'Delta SkyMiles',ratio:1,pv:1.2},{name:'Air France Flying Blue',ratio:1,pv:1.4},
+    {name:'British Airways Avios',ratio:1,pv:1.4},{name:'Singapore KrisFlyer',ratio:1,pv:1.6},
+    {name:'ANA Mileage Club',ratio:1,pv:1.75},{name:'Air Canada Aeroplan',ratio:1,pv:1.55},
+    {name:'Hilton Honors',ratio:1,pv:0.6},{name:'Marriott Bonvoy',ratio:1,pv:0.7},
+  ],
+  'Citi ThankYou Points':[
+    {name:'Turkish Miles&Smiles',ratio:1,pv:1.4},{name:'Air France Flying Blue',ratio:1,pv:1.4},
+    {name:'Singapore KrisFlyer',ratio:1,pv:1.6},{name:'Avianca LifeMiles',ratio:1,pv:1.55},
+    {name:'Air Canada Aeroplan',ratio:1,pv:1.55},{name:'Wyndham Rewards',ratio:1,pv:1.1},
+  ],
+  'Capital One Miles':[
+    {name:'Air Canada Aeroplan',ratio:1,pv:1.55},{name:'Turkish Miles&Smiles',ratio:1,pv:1.4},
+    {name:'British Airways Avios',ratio:1,pv:1.4},{name:'Air France Flying Blue',ratio:1,pv:1.4},
+    {name:'Singapore KrisFlyer',ratio:1,pv:1.6},{name:'Wyndham Rewards',ratio:1,pv:1.1},
+  ],
+  'Bilt Rewards':[
+    {name:'Air Canada Aeroplan',ratio:1,pv:1.55},{name:'United MileagePlus',ratio:1,pv:1.35},
+    {name:'World of Hyatt',ratio:1,pv:1.7},{name:'American AAdvantage',ratio:1,pv:1.5},
+    {name:'Alaska Mileage Plan',ratio:1,pv:1.8},
+  ],
+  'World of Hyatt':[
+    {name:'American AAdvantage',ratio:1,pv:1.5},
+  ],
+};
+
+/* ═══════════════════════════════════════════════════
+   BOOKING DEEP-LINKS — URL parameter templates
+   ═══════════════════════════════════════════════════ */
+function buildDeepLink(portal, params) {
+  const {from, to, dep, ret, pax=1, location, cin, cout, guests=1, rooms=1} = params;
+  const fmtDate = d => d ? d.replace(/-/g,'/') : '';
+  const fmtDateDash = d => d || '';
+  const links = {
+    'google_flights': `https://www.google.com/travel/flights#search;f=${from||''};t=${to||''};d=${dep||''};r=${ret||''};c=y;sc=1`,
+    'united':         `https://www.united.com/en/us/flight-search/book-a-flight?f=${from||''}&t=${to||''}&d=${fmtDate(dep)}&tt=2&sc=Y&np=${pax}`,
+    'delta':          `https://www.delta.com/us/en/flight-search/book-a-flight?tripType=RT&departureDate=${dep||''}&returnDate=${ret||''}&origin=${from||''}&destination=${to||''}&paxCount=${pax}`,
+    'american':       `https://www.aa.com/booking/find-flights?tripType=roundTrip&locale=en_US&passengers.adultPassengers=${pax}&slices[0].origin=${from||''}&slices[0].destination=${to||''}&slices[0].departureDate=${dep||''}&slices[1].departureDate=${ret||''}`,
+    'southwest':      `https://www.southwest.com/air/booking/select.html?originationAirportCode=${from||''}&destinationAirportCode=${to||''}&departureDate=${dep||''}&returnDate=${ret||''}&adultPassengersCount=${pax}&seniorPassengersCount=0&fareType=USD&passengerType=ADULT`,
+    'chase_travel':   `https://www.ultimaterewards.com/travel/flights`,
+    'amex_travel':    `https://travel.americanexpress.com/flights`,
+    'hyatt':          `https://www.hyatt.com/shop/rooms?location=${encodeURIComponent(location||'')}&checkInDate=${cin||''}&checkOutDate=${cout||''}&adults=${guests}&kids=0&rooms=${rooms}`,
+    'marriott':       `https://www.marriott.com/search/findHotels.mi?cityBrand=${encodeURIComponent(location||'')}&fromDate=${fmtDate(cin)}&toDate=${fmtDate(cout)}&numberOfRooms=${rooms}&numberOfNights=1`,
+    'hilton':         `https://www.hilton.com/en/hotels/?destination=${encodeURIComponent(location||'')}&checkInDate=${cin||''}&checkOutDate=${cout||''}&numAdults=${guests}&numRooms=${rooms}`,
+    'ihg':            `https://www.ihg.com/hotels/us/en/find-hotels/hotel/list?qDest=${encodeURIComponent(location||'')}&qChkIn=${cin||''}&qChkOut=${cout||''}&qRms=${rooms}`,
+    'airbnb':         `https://www.airbnb.com/s/${encodeURIComponent(location||'')}/homes?checkin=${cin||''}&checkout=${cout||''}&adults=${guests}`,
+    'booking_com':    `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(location||'')}&checkin=${cin||''}&checkout=${cout||''}&no_rooms=${rooms}&group_adults=${guests}`,
+    'expedia_flights':`https://www.expedia.com/Flights-Search?trip=roundtrip&leg1=from:${from||''},to:${to||''},departure:${dep||''}TANYT&leg2=from:${to||''},to:${from||''},departure:${ret||''}TANYT&passengers=adults:${pax}`,
+  };
+  return links[portal] || '#';
+}
+
+/* Booking step guides */
+function getBookingSteps(result, paymentOpt, searchParams) {
+  const isTransfer = paymentOpt.type === 'transfer';
+  const isPoints   = paymentOpt.type === 'points-full' || paymentOpt.type === 'points-partial';
+  const isFlight   = result.type === 'flight';
+  const isHotel    = result.type === 'hotel';
+  const isAirbnb   = result.type === 'airbnb';
+  const card = state.cards.find(c => paymentOpt.key && paymentOpt.key.includes(c.id));
+  const p = searchParams;
+
+  let steps = [];
+
+  if (isTransfer && card) {
+    steps.push({
+      title: 'Transfer points first',
+      body: `Before booking, transfer <strong>${paymentOpt.ptsNeeded?.toLocaleString() || '—'} points</strong> from <strong>${card.program}</strong> to <strong>${paymentOpt.partnerName}</strong>. Transfers are usually instant but can take up to 48 hours.`,
+      tip: 'Only transfer points after confirming award space is available — transfers are one-way and cannot be reversed.',
+      links: [
+        {label: `Open ${card.program} →`, url: LOYALTY_PORTALS[card.program] || 'https://google.com'},
+        {label: `Transfer to ${paymentOpt.partnerName} →`, url: ALL_LOYALTY.find(l=>l.name===paymentOpt.partnerName)?.url || '#'},
+      ]
+    });
+  }
+
+  if (isFlight) {
+    const portal = isTransfer ? paymentOpt.partnerPortal :
+                   isPoints && card?.program === 'Chase Ultimate Rewards' ? 'chase_travel' :
+                   isPoints && card?.program === 'Amex Membership Rewards' ? 'amex_travel' :
+                   'google_flights';
+    steps.push({
+      title: `Search on ${result.portal || 'the booking portal'}`,
+      body: `Click below to open <strong>${result.portalName || 'Google Flights'}</strong> with your search pre-filled. Look for the same flight: <strong>${result.name}</strong>.`,
+      tip: isPoints ? `At checkout, look for "Pay with ${card?.program || 'points'}" or "Use miles" option.` : 'Select the flight, then choose your card at checkout.',
+      links: [{
+        label: `Open ${result.portalName || 'Google Flights'} with search →`,
+        url: buildDeepLink(portal, p)
+      }]
+    });
+  } else if (isHotel) {
+    const portal = isPoints && card?.program === 'World of Hyatt' ? 'hyatt' :
+                   isPoints && card?.program === 'Marriott Bonvoy' ? 'marriott' :
+                   isPoints && card?.program === 'Hilton Honors' ? 'hilton' :
+                   isPoints && card?.program === 'Chase Ultimate Rewards' ? 'chase_travel' :
+                   'booking_com';
+    steps.push({
+      title: 'Search for the hotel',
+      body: `Open the hotel portal below with your dates and location pre-filled. Find <strong>${result.name}</strong> and select your room.`,
+      tip: isPoints ? 'Look for "Pay with points" or "Award nights" during checkout.' : 'Proceed to checkout and select your card.',
+      links: [{
+        label: `Open hotel search →`,
+        url: buildDeepLink(portal, p)
+      }]
+    });
+  } else {
+    steps.push({
+      title: 'Search on Airbnb',
+      body: `Open Airbnb with your dates, location, and guests pre-filled. Find a listing that matches <strong>${result.name}</strong> or something similar.`,
+      tip: 'Airbnb does not accept points directly — pay with your card and earn rewards that way.',
+      links: [{label: 'Open Airbnb search →', url: buildDeepLink('airbnb', p)}]
+    });
+  }
+
+  steps.push({
+    title: 'Select your payment',
+    body: isPoints ? `At checkout, select <strong>"Pay with ${paymentOpt.payLabel || 'points'}"</strong>. You'll need <strong>${paymentOpt.ptsNeeded?.toLocaleString() || '—'} points</strong>. Net out-of-pocket: <strong>$${paymentOpt.net?.toFixed(0) || 0}</strong>.`
+                   : `At checkout, select your <strong>${paymentOpt.label}</strong>. Total charge: <strong>$${paymentOpt.net?.toFixed(2) || result.cashPrice}</strong>. You'll earn ~${paymentOpt.earnPts?.toFixed(0) || 0} points back.`,
+    tip: 'Screenshot or save your booking confirmation before closing the tab.',
+    links: []
+  });
+
+  steps.push({
+    title: 'Log your booking',
+    body: 'Paste your confirmation number below to log this booking in PayMax and update your points balance.',
+    tip: '',
+    links: [],
+    isConfirmStep: true
+  });
+
+  return steps;
+}
+
+const LOYALTY_PORTALS = Object.fromEntries(ALL_LOYALTY.map(l=>[l.name, l.url]));
+
+const CATS = ['travel','dining','grocery','gas','entertainment','other'];
+const CAT_LABELS = {travel:'Travel',dining:'Dining',grocery:'Grocery',gas:'Gas',entertainment:'Entertainment',other:'Other'};
+const LCOLORS = ['#1a3a5c','#c5a028','#d03027','#2d6a4f','#8c8c8c','#003087','#6b2d8b','#c06000'];
+
+let state = {cards:[], loyalty:[], cash:5000, log:[], bookings:[]};
+function loadState(){try{const s=localStorage.getItem('pmx4');if(s)state=JSON.parse(s);}catch(e){}}
+function saveState(){localStorage.setItem('pmx4',JSON.stringify(state));}
+loadState();
+
+/* ═══ ONBOARDING ═══ */
+let obStep=1; const OB_N=5;
+let obSelIds=[], obLoy=[];
+
+function renderObProg(){
+  document.getElementById('ob-prog').innerHTML=
+    Array.from({length:OB_N},(_,i)=>`<div class="ob-dot${i<obStep?' done':''}"></div>`).join('');
+}
+renderObProg();
+
+function renderCardSelGrid(){
+  document.getElementById('card-sel-grid').innerHTML=
+    TOP_CARDS.map(c=>`<div class="card-opt${obSelIds.includes(c.id)?' sel':''}" onclick="toggleCard('${c.id}',this)">
+      <div class="co-chip" style="background:${c.color}"></div>
+      <div><div class="co-name">${c.name}</div><div class="co-net">${c.network} · ${c.program}</div></div>
+      <div class="co-chk">✓</div>
+    </div>`).join('');
+}
+
+function toggleCard(id,el){
+  obSelIds=obSelIds.includes(id)?obSelIds.filter(x=>x!==id):[...obSelIds,id];
+  el.classList.toggle('sel');
+  el.querySelector('.co-chk').style.display=obSelIds.includes(id)?'block':'none';
+}
+
+function renderObBal(){
+  const selected=TOP_CARDS.filter(c=>obSelIds.includes(c.id));
+  document.getElementById('ob-bal-list').innerHTML=selected.length
+    ? selected.map(c=>`<div class="bal-row">
+        <div class="bal-chip" style="background:${c.color}"></div>
+        <div><div style="font-weight:500;font-size:.86rem;">${c.name}</div><div style="font-size:.68rem;color:var(--muted)">${c.program} · ${c.pv}¢/pt</div></div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <div class="fl" style="min-width:130px"><label>Points balance</label><input type="number" id="bal-${c.id}" placeholder="e.g. 45000" value="0"></div>
+          <button class="action-btn" style="font-size:.68rem;white-space:nowrap;align-self:flex-end;" onclick="window.open('${LOYALTY_PORTALS[c.program]||'#'}','_blank')">Open portal ↗</button>
+        </div>
+      </div>`).join('')
+    : '<div class="empty-state">No cards selected — go back and pick your cards.</div>';
+}
+
+function obAddLoyalty(){
+  obLoy.push({name:'',points:0,pv:1.0});
+  renderObLoy();
+}
+
+function renderObLoy(){
+  document.getElementById('ob-loy-list').innerHTML=obLoy.map((l,i)=>{
+    const prog=ALL_LOYALTY.find(x=>x.name===l.name);
+    return `<div style="margin-bottom:8px;">
+      <div class="loyalty-add-row">
+        <div class="fl"><label>Program</label>
+          <select onchange="obLoy[${i}].name=this.value;renderObLoy()">
+            <option value="">— Select program —</option>
+            <optgroup label="Airlines">${ALL_LOYALTY.filter(x=>x.type==='airline').map(x=>`<option value="${x.name}"${l.name===x.name?' selected':''}>${x.name}</option>`).join('')}</optgroup>
+            <optgroup label="Hotels">${ALL_LOYALTY.filter(x=>x.type==='hotel').map(x=>`<option value="${x.name}"${l.name===x.name?' selected':''}>${x.name}</option>`).join('')}</optgroup>
+            <optgroup label="Other">${ALL_LOYALTY.filter(x=>x.type==='other').map(x=>`<option value="${x.name}"${l.name===x.name?' selected':''}>${x.name}</option>`).join('')}</optgroup>
+          </select>
+        </div>
+        <div class="fl"><label>Points balance</label><input type="number" placeholder="0" value="${l.points||''}" onchange="obLoy[${i}].points=+this.value"></div>
+        ${prog?`<button class="action-btn" style="font-size:.68rem;align-self:flex-end;white-space:nowrap;" onclick="window.open('${prog.url}','_blank')">Open portal ↗</button>`:'<div></div>'}
+        <button class="rm-btn" onclick="obLoy.splice(${i},1);renderObLoy()">×</button>
+      </div>
+      ${prog?`<div class="loyalty-portal-preview">↗ <a href="${prog.url}" target="_blank">${prog.url}</a> · ${prog.pv}¢/pt baseline value</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function obGo(step){
+  document.getElementById(`ob-${obStep}`).classList.remove('active');
+  obStep=step;
+  document.getElementById(`ob-${obStep}`).classList.add('active');
+  renderObProg();
+  if(step===2) renderCardSelGrid();
+  if(step===3) renderObBal();
+}
+
+function obFinish(){
+  state.cards=TOP_CARDS.filter(c=>obSelIds.includes(c.id)).map(c=>({
+    ...c, points:+(document.getElementById('bal-'+c.id)?.value||0), syncStatus:'manual'
+  }));
+  state.loyalty=obLoy.filter(l=>l.name).map(l=>{
+    const prog=ALL_LOYALTY.find(x=>x.name===l.name);
+    return {...l, pv:prog?.pv||l.pv||1, url:prog?.url||'', type:prog?.type||'other', syncStatus:'manual'};
+  });
+  state.cash=+document.getElementById('ob-cash').value||5000;
+  saveState();
+  document.getElementById('onboarding').style.display='none';
+  document.getElementById('app').style.display='block';
+  renderWallet(); renderLogPayments(); updateWalletPill();
+}
+
+/* ═══ PLAID MODAL ═══ */
+function showPlaidModal(){
+  const m=document.getElementById('modal-inner');
+  m.innerHTML=`
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div class="modal-title">Configure Plaid</div>
+    <div class="modal-sub">Plaid syncs bank balances and card transactions. It does <strong>not</strong> sync rewards points — those require AwardWallet (BACK-003).</div>
+    <div class="plaid-note" style="margin-bottom:1rem;">
+      <strong>Get keys:</strong> Sign up at <a href="https://dashboard.plaid.com" target="_blank">dashboard.plaid.com</a> →
+      create app → copy Client ID + Secret.<br>Start with <strong>Sandbox</strong> environment (free, no real bank needed).
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1rem;">
+      <div class="fl"><label>Client ID</label><input type="text" id="plaid-id" placeholder="5f3c…" value="${CFG.PLAID_CLIENT_ID!=='YOUR_PLAID_CLIENT_ID'?CFG.PLAID_CLIENT_ID:''}"></div>
+      <div class="fl"><label>Secret</label><input type="text" id="plaid-sec" placeholder="your secret" value="${CFG.PLAID_SECRET!=='YOUR_PLAID_SECRET'?CFG.PLAID_SECRET:''}"></div>
+      <div class="fl"><label>Environment</label>
+        <select id="plaid-env"><option value="sandbox">Sandbox</option><option value="production" ${CFG.PLAID_ENV==='production'?'selected':''}>Production</option></select>
+      </div>
+    </div>
+    <div style="background:var(--bg2);border-radius:var(--r-sm);padding:.85rem 1rem;font-size:.77rem;color:var(--muted);line-height:1.6;margin-bottom:1rem;">
+      <strong>Backlog items unlocked by Plaid:</strong> BACK-001 (card transactions), BACK-002 (bank balance sync)<br>
+      <strong>Separate item:</strong> BACK-003 = AwardWallet partner API for loyalty points auto-sync<br>
+      Contact: <a href="mailto:partnerships@awardwallet.com" style="color:var(--blue)">partnerships@awardwallet.com</a>
+    </div>
+    <button class="confirm-btn" onclick="savePlaid()">Save</button>`;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function savePlaid(){
+  CFG.PLAID_CLIENT_ID=document.getElementById('plaid-id').value;
+  CFG.PLAID_SECRET=document.getElementById('plaid-sec').value;
+  CFG.PLAID_ENV=document.getElementById('plaid-env').value;
+  CFG.PLAID_READY=!!CFG.PLAID_CLIENT_ID&&CFG.PLAID_CLIENT_ID!=='YOUR_PLAID_CLIENT_ID';
+  if(CFG.PLAID_READY) document.getElementById('dev-banner').style.display='none';
+  closeModal();
+}
+
+/* ═══ WALLET ═══ */
+function renderWallet(){
+  // Cards
+  const cg=document.getElementById('wallet-cards');
+  if(!state.cards.length){
+    cg.innerHTML='<div class="empty-state" style="grid-column:1/-1">No cards yet. <a href="#" onclick="openAddCardModal();return false;">Add a card →</a></div>';
+  } else {
+    cg.innerHTML=state.cards.map((c,i)=>{
+      const val=(c.points||0)*(c.pv||1)/100;
+      const partners=(TP[c.program]||[]);
+      const sc=c.syncStatus==='live'?'s-live':c.syncStatus==='pending'?'s-pending':'s-manual';
+      const st=c.syncStatus==='live'?'Live via Plaid':c.syncStatus==='pending'?'Pending Plaid':'Manual';
+      return `<div class="wcard">
+        <button class="wc-edit" onclick="openEditCard(${i})">Edit</button>
+        <div class="wc-top"><div class="wc-chip" style="background:${c.color||'#888'}"></div>
+          <div><div class="wc-name">${c.name}</div><div class="wc-prog">${c.program}</div></div></div>
+        <div class="wc-bal"><div><div class="wc-pts">${(c.points||0).toLocaleString()}</div><div style="font-size:.68rem;color:var(--muted)">points</div></div>
+          <div style="text-align:right"><div class="wc-val">≈ $${val.toFixed(0)}</div><div style="font-size:.66rem;color:var(--muted)">@ ${c.pv}¢/pt</div></div></div>
+        <div class="wc-sync"><span class="sync-badge ${sc}">${st}</span>
+          <button class="wc-sync-btn" onclick="syncCard(${i})">${CFG.PLAID_READY?'Sync Plaid':'Open portal ↗'}</button></div>
+        ${partners.length?`<div class="tp-chips">${partners.slice(0,4).map(p=>`<span class="tp-chip">${p.name.split(' ').slice(0,2).join(' ')}</span>`).join('')}${partners.length>4?`<span class="tp-chip">+${partners.length-4}</span>`:''}</div>`:''}
+      </div>`;
+    }).join('');
+  }
+  // Loyalty
+  const ll=document.getElementById('wallet-loyalty');
+  if(!state.loyalty.length){
+    ll.innerHTML='<div class="empty-state">No loyalty programs. <a href="#" onclick="openAddLoyaltyModal();return false;">Add one →</a></div>';
+  } else {
+    ll.innerHTML=state.loyalty.map((l,i)=>`
+      <div class="lrow">
+        <div class="lrow-icon" style="background:${LCOLORS[i%LCOLORS.length]}1a;color:${LCOLORS[i%LCOLORS.length]};border:1px solid ${LCOLORS[i%LCOLORS.length]}44;">${l.name.charAt(0)}</div>
+        <div class="lrow-body"><div class="lrow-name">${l.name}</div><div class="lrow-type">${l.type||'loyalty'} · ${l.pv||1}¢/pt</div></div>
+        <div style="text-align:right;margin-right:.7rem"><div class="lrow-pts">${(l.points||0).toLocaleString()}</div><div class="lrow-val">≈ $${((l.points||0)*(l.pv||1)/100).toFixed(0)}</div></div>
+        <button class="lrow-sync" onclick="window.open('${l.url||'#'}','_blank')">Open portal ↗</button>
+        <button class="del-btn" onclick="delLoyalty(${i})">×</button>
+      </div>`).join('');
+  }
+  document.getElementById('wallet-cash').value=state.cash;
+  document.getElementById('cash-display').textContent='$'+state.cash.toLocaleString();
+  updateWalletPill();
+}
+
+function syncCard(i){
+  if(CFG.PLAID_READY){alert('Plaid sync: implement syncCard() call — see BACK-001.');}
+  else{const c=state.cards[i];window.open(LOYALTY_PORTALS[c.program]||`https://www.google.com/search?q=${encodeURIComponent(c.name+' points balance')}`);}
+}
+function updateCash(v){state.cash=+v||0;document.getElementById('cash-display').textContent='$'+state.cash.toLocaleString();saveState();}
+function updateWalletPill(){
+  const pts=[...state.cards,...state.loyalty].reduce((s,x)=>s+(x.points||0),0);
+  document.getElementById('wallet-pill').textContent=pts.toLocaleString()+' pts';
+}
+function delLoyalty(i){state.loyalty.splice(i,1);saveState();renderWallet();}
+
+function openAddCardModal(){
+  const m=document.getElementById('modal-inner');
+  m.innerHTML=`
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div class="modal-title">Add a card</div>
+    <div class="modal-sub">Select from the top 20 US credit cards.</div>
+    <div class="fl" style="margin-bottom:1rem"><label>Card</label>
+      <select id="acs" onchange="prefillCard(this.value)">
+        <option value="">— Select card —</option>
+        ${TOP_CARDS.filter(c=>!state.cards.find(s=>s.id===c.id)).map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}
+      </select></div>
+    <div id="ac-pts-row" style="display:none">
+      <div class="fl" style="margin-bottom:.85rem"><label>Current points balance</label><input type="number" id="ac-pts" placeholder="e.g. 45000"></div>
+      <div id="ac-info" style="font-size:.77rem;color:var(--muted);background:var(--bg2);border-radius:var(--r-sm);padding:.75rem 1rem;margin-bottom:1rem;line-height:1.6;"></div>
+    </div>
+    <button class="confirm-btn" onclick="confirmAddCard()">Add card</button>`;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function prefillCard(id){
+  const row=document.getElementById('ac-pts-row');
+  if(!id){row.style.display='none';return;}
+  const c=TOP_CARDS.find(x=>x.id===id);
+  const partners=(TP[c.program]||[]);
+  document.getElementById('ac-info').innerHTML=`<strong>${c.program}</strong> · ${c.pv}¢/pt · $${c.fee}/yr<br>
+    Earn: ${c.rates.travel}× travel · ${c.rates.dining}× dining · ${c.rates.grocery}× grocery<br>
+    ${partners.length?'Transfer partners: '+partners.map(p=>p.name).join(', '):'No transfer partners in database'}`;
+  row.style.display='block';
+}
+
+function confirmAddCard(){
+  const id=document.getElementById('acs').value;
+  if(!id)return;
+  const t=TOP_CARDS.find(c=>c.id===id);
+  if(!t)return;
+  state.cards.push({...t,points:+document.getElementById('ac-pts').value||0,syncStatus:'manual'});
+  saveState();closeModal();renderWallet();renderLogPayments();
+}
+
+function openEditCard(i){
+  const c=state.cards[i];
+  document.getElementById('modal-inner').innerHTML=`
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div class="modal-title">Edit — ${c.name}</div>
+    <div class="modal-sub">${c.program} · ${c.pv}¢/pt</div>
+    <div class="fl" style="margin-bottom:.9rem"><label>Points balance</label><input type="number" id="ep" value="${c.points||0}"></div>
+    <div class="fl" style="margin-bottom:.9rem"><label>Point value (¢/pt)</label><input type="number" id="epv" step=".1" value="${c.pv||1}"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:1rem;">
+      ${CATS.map(cat=>`<div class="fl"><label>${CAT_LABELS[cat]}</label><input type="number" id="er-${cat}" step=".5" min="0" value="${(c.rates&&c.rates[cat])||1}"></div>`).join('')}
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="confirm-btn" style="flex:1" onclick="saveEditCard(${i})">Save</button>
+      <button style="background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd);border-radius:var(--r-sm);padding:.85rem 1.25rem;font-family:'Syne',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;" onclick="removeCard(${i})">Remove</button>
+    </div>`;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function saveEditCard(i){
+  state.cards[i].points=+document.getElementById('ep').value;
+  state.cards[i].pv=+document.getElementById('epv').value;
+  CATS.forEach(cat=>{state.cards[i].rates[cat]=+document.getElementById('er-'+cat).value;});
+  saveState();closeModal();renderWallet();
+}
+function removeCard(i){state.cards.splice(i,1);saveState();closeModal();renderWallet();renderLogPayments();}
+
+function openAddLoyaltyModal(){
+  document.getElementById('modal-inner').innerHTML=`
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div class="modal-title">Add loyalty program</div>
+    <div class="modal-sub">Airlines, hotels, or any other program not linked to a card.</div>
+    <div class="fl" style="margin-bottom:.85rem"><label>Program</label>
+      <select id="ml-sel" onchange="prefillLoyalty(this.value)">
+        <option value="">— Select program —</option>
+        <optgroup label="Airlines">${ALL_LOYALTY.filter(x=>x.type==='airline').map(x=>`<option value="${x.name}">${x.name}</option>`).join('')}</optgroup>
+        <optgroup label="Hotels">${ALL_LOYALTY.filter(x=>x.type==='hotel').map(x=>`<option value="${x.name}">${x.name}</option>`).join('')}</optgroup>
+        <optgroup label="Other">${ALL_LOYALTY.filter(x=>x.type==='other').map(x=>`<option value="${x.name}">${x.name}</option>`).join('')}</optgroup>
+      </select></div>
+    <div id="ml-info" style="display:none;margin-bottom:.85rem;"></div>
+    <div class="fl" style="margin-bottom:.85rem"><label>Points balance</label><input type="number" id="ml-pts" placeholder="0"></div>
+    <button class="confirm-btn" onclick="confirmAddLoyalty()">Add program</button>`;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function prefillLoyalty(name){
+  const prog=ALL_LOYALTY.find(x=>x.name===name);
+  const el=document.getElementById('ml-info');
+  if(!prog){el.style.display='none';return;}
+  el.style.display='block';
+  el.innerHTML=`<div class="loyalty-portal-preview" style="border-radius:var(--r-sm)">
+    ↗ Sign in to check your balance: <a href="${prog.url}" target="_blank">${prog.url}</a>
+    <span style="margin-left:auto;font-size:.7rem;color:var(--muted)">${prog.pv}¢/pt · ${prog.type}</span>
+  </div>`;
+}
+
+function confirmAddLoyalty(){
+  const name=document.getElementById('ml-sel').value;
+  if(!name)return;
+  const prog=ALL_LOYALTY.find(x=>x.name===name);
+  state.loyalty.push({name,points:+document.getElementById('ml-pts').value||0,pv:prog?.pv||1,url:prog?.url||'',type:prog?.type||'loyalty',syncStatus:'manual'});
+  saveState();closeModal();renderWallet();
+}
+
+/* ═══ SEARCH ═══ */
+let searchType='flight', currentResults=[], searchParams={};
+
+function setSearchType(type,btn){
+  searchType=type;
+  document.querySelectorAll('.stype').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderSearchForm();
+  document.getElementById('search-results-area').innerHTML='';
+}
+
+/* ═══════════════════════════════════════════════════
+   CITY → AIRPORTS DATABASE
+   ═══════════════════════════════════════════════════ */
+const CITY_AIRPORTS = [
+  {city:'New York',code:'NYC',airports:[
+    {code:'JFK',name:'John F. Kennedy International'},
+    {code:'EWR',name:'Newark Liberty International'},
+    {code:'LGA',name:'LaGuardia'},
+  ]},
+  {city:'Los Angeles',code:'LAX',airports:[
+    {code:'LAX',name:'Los Angeles International'},
+    {code:'BUR',name:'Hollywood Burbank'},
+    {code:'LGB',name:'Long Beach'},
+    {code:'ONT',name:'Ontario International'},
+  ]},
+  {city:'Chicago',code:'CHI',airports:[
+    {code:'ORD',name:"O'Hare International"},
+    {code:'MDW',name:'Midway International'},
+  ]},
+  {city:'San Francisco',code:'SFO',airports:[
+    {code:'SFO',name:'San Francisco International'},
+    {code:'OAK',name:'Oakland International'},
+    {code:'SJC',name:'San Jose International'},
+  ]},
+  {city:'Washington DC',code:'WAS',airports:[
+    {code:'DCA',name:'Reagan National'},
+    {code:'IAD',name:'Dulles International'},
+    {code:'BWI',name:'Baltimore/Washington'},
+  ]},
+  {city:'Boston',code:'BOS',airports:[{code:'BOS',name:'Logan International'}]},
+  {city:'Miami',code:'MIA',airports:[
+    {code:'MIA',name:'Miami International'},
+    {code:'FLL',name:'Fort Lauderdale-Hollywood'},
+  ]},
+  {city:'Dallas',code:'DFW',airports:[
+    {code:'DFW',name:'Dallas/Fort Worth International'},
+    {code:'DAL',name:'Dallas Love Field'},
+  ]},
+  {city:'Atlanta',code:'ATL',airports:[{code:'ATL',name:'Hartsfield-Jackson Atlanta'}]},
+  {city:'Seattle',code:'SEA',airports:[{code:'SEA',name:'Seattle-Tacoma International'}]},
+  {city:'Denver',code:'DEN',airports:[{code:'DEN',name:'Denver International'}]},
+  {city:'Minneapolis',code:'MSP',airports:[{code:'MSP',name:'Minneapolis-Saint Paul International'}]},
+  {city:'Phoenix',code:'PHX',airports:[{code:'PHX',name:'Phoenix Sky Harbor'}]},
+  {city:'Las Vegas',code:'LAS',airports:[{code:'LAS',name:'Harry Reid International'}]},
+  {city:'Houston',code:'HOU',airports:[
+    {code:'IAH',name:'George Bush Intercontinental'},
+    {code:'HOU',name:'William P. Hobby'},
+  ]},
+  {city:'Orlando',code:'MCO',airports:[{code:'MCO',name:'Orlando International'}]},
+  {city:'Portland',code:'PDX',airports:[{code:'PDX',name:'Portland International'}]},
+  {city:'Detroit',code:'DTW',airports:[{code:'DTW',name:'Detroit Metropolitan Wayne County'}]},
+  {city:'Philadelphia',code:'PHL',airports:[{code:'PHL',name:'Philadelphia International'}]},
+  {city:'Mumbai',code:'BOM',airports:[{code:'BOM',name:'Chhatrapati Shivaji Maharaj International'}]},
+  {city:'Delhi',code:'DEL',airports:[{code:'DEL',name:'Indira Gandhi International'}]},
+  {city:'London',code:'LON',airports:[
+    {code:'LHR',name:'Heathrow'},
+    {code:'LGW',name:'Gatwick'},
+    {code:'STN',name:'Stansted'},
+  ]},
+  {city:'Paris',code:'PAR',airports:[
+    {code:'CDG',name:'Charles de Gaulle'},
+    {code:'ORY',name:'Orly'},
+  ]},
+  {city:'Tokyo',code:'TYO',airports:[
+    {code:'NRT',name:'Narita International'},
+    {code:'HND',name:'Haneda'},
+  ]},
+  {city:'Dubai',code:'DXB',airports:[{code:'DXB',name:'Dubai International'}]},
+  {city:'Singapore',code:'SIN',airports:[{code:'SIN',name:'Changi Airport'}]},
+  {city:'Toronto',code:'YTO',airports:[
+    {code:'YYZ',name:'Pearson International'},
+    {code:'YTZ',name:'Billy Bishop City Airport'},
+  ]},
+  {city:'Cancun',code:'CUN',airports:[{code:'CUN',name:'Cancun International'}]},
+  {city:'Mexico City',code:'MEX',airports:[{code:'MEX',name:'Benito Juarez International'}]},
+];
+
+/* Selected airport state for the search form */
+let fromSelection = null; // {city, code, airports, selectedCode}
+let toSelection = null;
+
+function airportSearch(query) {
+  if(!query||query.length<1) return [];
+  const q=query.toLowerCase();
+  const results=[];
+  CITY_AIRPORTS.forEach(c=>{
+    const cityMatch=c.city.toLowerCase().includes(q)||c.code.toLowerCase().includes(q);
+    c.airports.forEach(a=>{
+      if(cityMatch||a.code.toLowerCase().includes(q)||a.name.toLowerCase().includes(q)){
+        results.push({...c, selectedCode:a.code, selectedName:a.name, isAllAirports:false});
+      }
+    });
+    if(cityMatch&&c.airports.length>1){
+      results.unshift({...c, selectedCode:'ALL', selectedName:'All airports', isAllAirports:true});
+    }
+  });
+  // Deduplicate
+  const seen=new Set();
+  return results.filter(r=>{
+    const key=r.city+r.selectedCode;
+    if(seen.has(key)) return false;
+    seen.add(key); return true;
+  }).slice(0,8);
+}
+
+function showAirportDropdown(inputId, fieldKey) {
+  const input=document.getElementById(inputId);
+  const wrap=input?.parentElement;
+  let dd=wrap?.querySelector('.airport-dropdown');
+  if(!dd){dd=document.createElement('div');dd.className='airport-dropdown';wrap.appendChild(dd);}
+  const q=input.value;
+  const results=airportSearch(q);
+  if(!results.length){dd.style.display='none';return;}
+  dd.style.display='block';
+  dd.innerHTML=results.map((r,i)=>`
+    <div class="airport-opt" onclick="selectAirport('${inputId}','${fieldKey}',${i})">
+      <span class="airport-opt-code">${r.selectedCode==='ALL'?r.code:r.selectedCode}</span>
+      <div class="airport-opt-city">${r.city}${r.selectedCode==='ALL'?' — all airports':''}</div>
+      <div class="airport-opt-sub">${r.selectedCode==='ALL'?r.airports.map(a=>a.code).join(', '):r.selectedName}</div>
+    </div>`).join('');
+  // Store results on dd for selection
+  dd._results=results;
+}
+
+function selectAirport(inputId, fieldKey, idx){
+  const input=document.getElementById(inputId);
+  const wrap=input?.parentElement;
+  const dd=wrap?.querySelector('.airport-dropdown');
+  const r=dd?._results?.[idx];
+  if(!r) return;
+  const displayLabel=r.selectedCode==='ALL'?`${r.city} (All airports — ${r.airports.map(a=>a.code).join('/')})`:`${r.city} — ${r.selectedCode} (${r.selectedName})`;
+  input.value=displayLabel;
+  if(fieldKey==='from') fromSelection=r;
+  if(fieldKey==='to') toSelection=r;
+  dd.style.display='none';
+}
+
+function hideDropdowns(){
+  document.querySelectorAll('.airport-dropdown').forEach(d=>d.style.display='none');
+}
+
+function renderSearchForm(){
+  const next=new Date(Date.now()+7*86400000).toISOString().split('T')[0];
+  const nxt2=new Date(Date.now()+14*86400000).toISOString().split('T')[0];
+  const a=document.getElementById('search-form-area');
+  fromSelection=null; toSelection=null;
+  if(searchType==='flight') a.innerHTML=`
+    <div class="sf-grid fl5">
+      <div class="fl"><label>From — city or airport</label>
+        <div class="airport-wrap">
+          <input type="text" id="s-from" placeholder="e.g. New York, NYC, JFK" autocomplete="off"
+            oninput="showAirportDropdown('s-from','from')" onfocus="showAirportDropdown('s-from','from')" onblur="setTimeout(hideDropdowns,180)">
+        </div>
+      </div>
+      <div class="fl"><label>To — city or airport</label>
+        <div class="airport-wrap">
+          <input type="text" id="s-to" placeholder="e.g. Minneapolis, MSP" autocomplete="off"
+            oninput="showAirportDropdown('s-to','to')" onfocus="showAirportDropdown('s-to','to')" onblur="setTimeout(hideDropdowns,180)">
+        </div>
+      </div>
+      <div class="fl"><label>Depart</label><input type="date" id="s-dep" value="${next}"></div>
+      <div class="fl"><label>Return</label><input type="date" id="s-ret" value="${nxt2}"></div>
+      <div class="fl"><label>Pax</label><select id="s-pax">${[1,2,3,4].map(n=>`<option>${n}</option>`).join('')}</select></div>
+    </div><div style="margin-top:11px"><button class="search-btn" onclick="runSearch()">Search flights \u2192</button></div>`;
+  else if(searchType==='hotel') a.innerHTML=`
+    <div class="sf-grid ht5">
+      <div class="fl"><label>Destination & neighborhood</label><input type="text" id="s-dest" placeholder="e.g. River North, Chicago"></div>
+      <div class="fl"><label>Rooms</label><select id="s-rooms">${[1,2,3].map(n=>`<option>${n}</option>`).join('')}</select></div>
+      <div class="fl"><label>Check-in</label><input type="date" id="s-cin" value="${next}"></div>
+      <div class="fl"><label>Check-out</label><input type="date" id="s-cout" value="${nxt2}"></div>
+      <div class="fl"><label>Guests</label><select id="s-guests">${[1,2,3,4].map(n=>`<option>${n}</option>`).join('')}</select></div>
+    </div><div style="margin-top:11px"><button class="search-btn" onclick="runSearch()">Search hotels \u2192</button></div>`;
+  else a.innerHTML=`
+    <div class="sf-grid ab6">
+      <div class="fl"><label>Location</label><input type="text" id="s-dest" placeholder="e.g. Logan Square, Chicago"></div>
+      <div class="fl"><label>Rooms</label><select id="s-rooms">${[1,2,3,4,5].map(n=>`<option>${n}</option>`).join('')}</select></div>
+      <div class="fl"><label>Check-in</label><input type="date" id="s-cin" value="${next}"></div>
+      <div class="fl"><label>Check-out</label><input type="date" id="s-cout" value="${nxt2}"></div>
+      <div class="fl"><label>Guests</label><select id="s-guests">${[1,2,3,4].map(n=>`<option>${n}</option>`).join('')}</select></div>
+      <div class="fl"><label>Entire home</label><select id="s-entire"><option>Yes</option><option>No</option></select></div>
+    </div><div style="margin-top:11px"><button class="search-btn" onclick="runSearch()">Search rentals \u2192</button></div>`;
+}
+
+function captureSearchParams(){
+  if(searchType==='flight'){
+    const fromCodes = fromSelection ? (fromSelection.selectedCode==='ALL' ? fromSelection.airports.map(a=>a.code) : [fromSelection.selectedCode]) : [document.getElementById('s-from')?.value||'???'];
+    const toCodes   = toSelection   ? (toSelection.selectedCode==='ALL'   ? toSelection.airports.map(a=>a.code)   : [toSelection.selectedCode])   : [document.getElementById('s-to')?.value||'???'];
+    return {
+      from: fromCodes[0], fromCodes, fromCity: fromSelection?.city||fromCodes[0],
+      to:   toCodes[0],   toCodes,   toCity:   toSelection?.city||toCodes[0],
+      dep:document.getElementById('s-dep')?.value||'',
+      ret:document.getElementById('s-ret')?.value||'',
+      pax:+(document.getElementById('s-pax')?.value||1),
+    };
+  }
+  return {
+    location:document.getElementById('s-dest')?.value||'',
+    cin:document.getElementById('s-cin')?.value||'',
+    cout:document.getElementById('s-cout')?.value||'',
+    guests:+(document.getElementById('s-guests')?.value||1),
+    rooms:+(document.getElementById('s-rooms')?.value||1),
+  };
+}
+
+async function runSearch(){
+  const area=document.getElementById('search-results-area');
+  searchParams=captureSearchParams();
+  if(searchType==='flight'&&!fromSelection&&!document.getElementById('s-from')?.value){
+    area.innerHTML='<div class="empty-state">Enter a departure city or airport to search.</div>';return;
+  }
+  const label=searchType==='flight'
+    ?`${searchParams.fromCity||searchParams.from||'?'} \u2192 ${searchParams.toCity||searchParams.to||'?'}`
+    :(searchParams.location||'your destination');
+  area.innerHTML=`<div style="text-align:center;padding:2.5rem"><div class="loading-dots"><span></span><span></span><span></span></div><div style="color:var(--muted);font-size:.8rem;margin-top:.6rem">Searching live inventory for ${label}\u2026</div></div>`;
+  const backendUrl=CFG.BACKEND_URL||'';
+  const isLocal=!backendUrl&&window.location.protocol==='file:';
+  if(isLocal){area.innerHTML=renderNoBackendMessage(label);return;}
+  try{
+    if(searchType==='flight') await searchFlights(area,label,backendUrl);
+    else if(searchType==='hotel') await searchHotels(area,label,backendUrl);
+    else renderPortalRedirects(); // Airbnb: no API, use portal links
+  }catch(err){
+    console.error('Search error:',err);
+    area.innerHTML=`<div class="empty-state"><strong>Search failed</strong><br>${err.message.includes('Failed to fetch')?'Could not reach the PayMax backend. Make sure the app is deployed on Netlify.':err.message}</div>`;
+  }
+}
+
+async function searchFlights(area,label,backendUrl){
+  const p=searchParams;
+  const fromCodes=p.fromCodes||[p.from];
+  const toCodes=p.toCodes||[p.to];
+  const pairs=[];
+  for(const f of fromCodes.slice(0,2)) for(const t of toCodes.slice(0,2)) pairs.push({from:f,to:t});
+
+  // Run Duffel (cash prices) and Seats.aero (awards) in parallel
+  const [cashResults,awardResults]=await Promise.all([
+    Promise.all(pairs.map(async pair=>{
+      const body={origin:pair.from,destination:pair.to,departureDate:p.dep,adults:p.pax||1,cabinClass:'economy',maxOffers:10};
+      if(p.ret) body.returnDate=p.ret;
+      const res=await fetch(`${backendUrl}/api/flight-search`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      if(!res.ok){const e=await res.json().catch(()=>({error:res.statusText}));throw new Error(e.error||`Flight search failed (${res.status})`);}
+      return (await res.json()).flights||[];
+    })).then(r=>r.flat()),
+    (async()=>{
+      try{
+        const pair=pairs[0];
+        const body={origin:pair.from,destination:pair.to,startDate:p.dep};
+        const seatsToken=localStorage.getItem('seats_aero_token');
+        if(seatsToken) body.userToken=seatsToken;
+        const res=await fetch(`${backendUrl}/api/award-search`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+        if(!res.ok) return [];
+        return (await res.json()).awards||[];
+      }catch{return [];}
+    })(),
+  ]);
+
+  if(!cashResults.length){
+    area.innerHTML='<div class="empty-state">No flights found for this route and date. Try different dates or airports.</div>';
+    return;
+  }
+
+  const seen=new Set();
+  const unique=cashResults.filter(f=>{
+    const k=(f.flightNumber||f.id)+f.departure;
+    if(seen.has(k)) return false;
+    seen.add(k); return true;
+  }).sort((a,b)=>a.cashPrice-b.cashPrice);
+
+  // Index award data by Seats.aero source
+  const awardBySource={};
+  awardResults.forEach(a=>{
+    if(!awardBySource[a.source]) awardBySource[a.source]=[];
+    awardBySource[a.source].push(a);
+  });
+
+  currentResults=unique.map(f=>{
+    const src=airlineToSource(f.airlineCode);
+    const awards=(awardBySource[src]||[]).sort((a,b)=>(a.pointsCost||999999)-(b.pointsCost||999999));
+    const bestAward=awards[0]||null;
+    return {
+      id:f.id,type:'flight',
+      // US DOT requires operating carrier name shown prominently
+      name:`${f.operatingCarrier||f.airline} · ${f.from}→${f.to}`,
+      sub:`${f.stops} · ${f.duration} · ${f.departureTime}–${f.arrivalTime}`,
+      icon:'✈️',stars:f.cabin==='Business'||f.cabin==='First'?5:4,
+      amenities:[f.stops,f.cabin,f.baggage],
+      cashPrice:f.cashPrice,currency:f.currency||'USD',departure:f.departure,
+      portalName:'Duffel',portal:'google_flights',
+      loyaltyPts:bestAward?.pointsCost||null,
+      loyaltyProgram:bestAward?bestAward.programName:bestLoyaltyProgram(),
+      partnerName:bestAward?bestAward.programName:airlinePartner(f.airlineCode),
+      awardSeats:bestAward?.seats||null,
+      awardCabin:bestAward?.cabin||null,
+      hasRealAwardData:!!bestAward,
+      partnerPortal:'google_flights',
+      portalOptions:buildFlightPortalOptions(f.cashPrice),
+      offerId:f.offerId,passengerIds:f.passengerIds,offerExpiresAt:f.expiresAt,
+      segments:f.segments,_raw:f,
+    };
+  });
+  renderSearchResults();
+}
+
+function airlineToSource(code){
+  return {UA:'united',DL:'delta',AA:'american',WN:'american',B6:'jetblue',AS:'alaska',
+    AC:'aeroplan',BA:'aeroplan',AF:'flyingblue',EK:'emirates',LH:'lufthansa',
+    QF:'qantas',QR:'qatar',SQ:'singapore',TK:'turkish',VS:'virginatlantic'}[code]||null;
+}
+async function searchHotels(area,label,backendUrl){
+  const p=searchParams;
+  const cityCode=toCityCode(p.location||'');
+  if(!cityCode){area.innerHTML=`<div class="empty-state">Could not find a city code for "${p.location}". Try a major city name like "Chicago".</div>`;return;}
+  const res=await fetch(`${backendUrl}/api/hotel-search`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cityCode,checkInDate:p.cin,checkOutDate:p.cout,adults:p.guests||1,roomQuantity:p.rooms||1,currency:'USD',max:8})});
+  if(!res.ok){const e=await res.json().catch(()=>({error:res.statusText}));throw new Error(e.error||`Hotel search failed (${res.status})`);}
+  const data=await res.json();
+  if(!(data.hotels||[]).length){area.innerHTML='<div class="empty-state">No hotels found. Try a different city or dates.</div>';return;}
+  currentResults=data.hotels.map(h=>({
+    id:h.id,type:'hotel',name:h.name,
+    sub:`${h.cityCode} \u00b7 ${h.roomType}${h.bedType?' \u00b7 '+h.bedType:''}`,
+    icon:'\U0001f3e8',stars:h.stars||4,
+    amenities:[h.roomType,h.bedType||'Standard bed','Book direct'],
+    cashPrice:h.cashPrice,currency:h.currency,
+    portalName:'Amadeus',portal:'booking_com',
+    loyaltyPts:Math.round(h.cashPrice/0.007/1000)*1000,
+    loyaltyProgram:null,partnerName:null,partnerPortal:null,portalOptions:[],_raw:h,
+  }));
+  renderSearchResults();
+}
+
+function fmtTime(iso){try{return new Date(iso).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true});}catch{return iso?.slice(11,16)||'';}}
+function bestLoyaltyProgram(){const c=state.cards.find(c=>c.program==='Chase Ultimate Rewards'&&c.points>0);return c?c.program:(state.cards.find(c=>c.program==='Amex Membership Rewards'&&c.points>0)?.program||null);}
+function airlinePartner(code){return {'UA':'United MileagePlus','WN':'Southwest Rapid Rewards','BA':'British Airways Avios','AC':'Air Canada Aeroplan','DL':'Delta SkyMiles','AF':'Air France Flying Blue','SQ':'Singapore KrisFlyer','NH':'ANA Mileage Club'}[code]||null;}
+function buildFlightPortalOptions(price){
+  const opts=[];
+  state.cards.forEach(c=>{
+    if(c.program==='Chase Ultimate Rewards') opts.push({program:'Chase Ultimate Rewards',portal:'Chase Travel',ptsCSR:Math.ceil(price/0.015),ptsCsp:Math.ceil(price/0.0125),url:'https://www.ultimaterewards.com/travel/flights'});
+    if(c.program==='Amex Membership Rewards') opts.push({program:'Amex Membership Rewards',portal:'Amex Travel',ptsPortal:Math.ceil(price/0.01),url:'https://travel.americanexpress.com/flights'});
+  });
+  return opts;
+}
+function toCityCode(location){
+  const loc=location.toLowerCase();
+  const map={'new york':'NYC','nyc':'NYC','manhattan':'NYC','los angeles':'LAX','la':'LAX','chicago':'CHI','san francisco':'SFO','sf':'SFO','washington':'WAS','dc':'WAS','boston':'BOS','miami':'MIA','dallas':'DFW','atlanta':'ATL','seattle':'SEA','denver':'DEN','minneapolis':'MSP','phoenix':'PHX','las vegas':'LAS','houston':'HOU','orlando':'MCO','portland':'PDX','detroit':'DTW','philadelphia':'PHL','mumbai':'BOM','delhi':'DEL','london':'LON','paris':'PAR','tokyo':'TYO','dubai':'DXB','singapore':'SIN','toronto':'YTO','cancun':'CUN','mexico city':'MEX'};
+  for(const[k,v]of Object.entries(map)){if(loc.includes(k))return v;}
+  return null;
+}
+function renderNoBackendMessage(label){
+  return `<div style="background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:var(--r);padding:1.5rem 1.75rem;">
+    <div style="font-family:'Syne',sans-serif;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--amber);margin-bottom:.5rem;">Backend required for live search</div>
+    <div style="font-size:.88rem;font-weight:500;margin-bottom:.5rem;">Deploy PayMax to Netlify to enable real flight data</div>
+    <div style="font-size:.8rem;color:var(--muted);line-height:1.7;margin-bottom:1rem;">
+      You're running PayMax as a local HTML file. Live flight search requires the Netlify backend to securely hold your Amadeus API keys.<br><br>
+      <strong style="color:var(--text)">Setup steps:</strong><br>
+      1. Deploy the <code style="font-family:monospace;font-size:.78rem;background:rgba(0,0,0,.05);padding:1px 5px;border-radius:3px">paymax-app/</code> folder to <a href="https://app.netlify.com/drop" target="_blank" style="color:var(--blue)">Netlify (drag &amp; drop)</a><br>
+      2. In Netlify \u2192 Site settings \u2192 Environment variables, add:<br>
+      &nbsp;&nbsp;&nbsp;<code style="font-family:monospace;font-size:.78rem;background:rgba(0,0,0,.05);padding:1px 5px;border-radius:3px">AMADEUS_API_KEY</code> and <code style="font-family:monospace;font-size:.78rem;background:rgba(0,0,0,.05);padding:1px 5px;border-radius:3px">AMADEUS_API_SECRET</code><br>
+      &nbsp;&nbsp;&nbsp;from <a href="https://developers.amadeus.com" target="_blank" style="color:var(--blue)">developers.amadeus.com</a> (free, 2,000 calls/month)<br>
+      3. Open the Netlify URL \u2014 live search works automatically
+    </div>
+    <div style="font-size:.78rem;color:var(--muted);padding-top:.75rem;border-top:1px solid var(--amber-bd);">
+      In the meantime, search directly on
+      <a href="${buildPortalLink('google_flights',searchParams)}" target="_blank" style="color:var(--blue)">Google Flights</a>,
+      <a href="${buildPortalLink('united',searchParams)}" target="_blank" style="color:var(--blue)">United</a>,
+      <a href="${buildPortalLink('delta',searchParams)}" target="_blank" style="color:var(--blue)">Delta</a>, or
+      <a href="${buildPortalLink('american',searchParams)}" target="_blank" style="color:var(--blue)">American</a>
+      \u2014 then use the <strong>Optimizer tab</strong> to find the best way to pay.
+    </div>
+  </div>`;
+}
+/* CPP rating helper */
+function cppRating(cpp,baseline){
+  const ratio=cpp/baseline;
+  if(ratio>=1.5) return {cls:'cpp-great',label:'Excellent CPP'};
+  if(ratio>=1.1) return {cls:'cpp-good', label:'Good CPP'};
+  if(ratio>=0.9) return {cls:'cpp-ok',   label:'Fair CPP'};
+  return          {cls:'cpp-poor', label:'Below baseline'};
+}
+
+/* Portal CPP for a given card program */
+function portalCpp(program, card){
+  // Chase: 1.5cpp for CSR, 1.25cpp for CSP/others; Amex: 1cpp baseline via portal
+  if(program==='Chase Ultimate Rewards'){
+    if(card&&(card.id==='csr'||card.id==='ink')) return 1.5;
+    return 1.25;
+  }
+  if(program==='Amex Membership Rewards') return 1.0;
+  if(program==='Capital One Miles')        return 1.0;
+  if(program==='Citi ThankYou Points')     return 1.6; // Citi Premier via portal
+  if(program==='Bilt Rewards')             return 1.25;
+  return 1.0;
+}
+
+function buildPayOpts(result){
+  const p=result.cashPrice; const opts=[];
+
+  // 1. Cash
+  if(state.cash>=p) opts.push({key:'cash',label:'Cash / Debit',detail:`$${p} out of pocket · no rewards earned`,net:p,saved:0,type:'cash',earnPts:0,cpp:null});
+
+  // 2. Pay with card, earn points
+  state.cards.forEach(c=>{
+    const rate=(c.rates&&c.rates['travel'])||1;
+    const earned=p*rate*(c.pv||1)/100;
+    const earnPts=p*rate;
+    opts.push({key:'card-'+c.id,label:c.name,detail:`Earn ${earnPts.toFixed(0)} pts (${rate}× travel) · +$${earned.toFixed(2)} value back`,net:p-earned,saved:earned,type:'card',earnPts,payLabel:c.program,cpp:null});
+  });
+
+  // 3. Redeem points directly (portal fixed-value)
+  state.cards.forEach(c=>{
+    if(!c.points||c.points<500)return;
+    const cpp=portalCpp(c.program,c);
+    const pv=cpp/100;
+    const ptsN=Math.ceil(p/pv);
+    const actualCpp=p/Math.min(ptsN,c.points||ptsN)*100; // cpp this booking yields
+    // Compare portal CPP against the card's own baseline point value
+    // e.g. Bilt baseline = 1.5cpp, portal rate = 1.25cpp → ratio 0.83 → below baseline
+    const ratingVsBaseline=cppRating(actualCpp, c.pv||1);
+    if(c.points>=ptsN){
+      opts.push({key:'pts-'+c.id,label:`${c.name} — ${c.program} Portal`,
+        detail:`Redeem ${ptsN.toLocaleString()} pts @ ${cpp}¢/pt fixed · $0 out of pocket`,
+        net:0,saved:p,type:'points-full',ptsNeeded:ptsN,payLabel:c.program,
+        cpp:actualCpp,cppRating:ratingVsBaseline,portalCpp:cpp,baseline:c.pv||1});
+    } else {
+      const cov=c.points*pv;
+      opts.push({key:'ptsp-'+c.id,label:`${c.name} — Portal (partial)`,
+        detail:`Use ${c.points.toLocaleString()} pts @ ${cpp}¢/pt (=$${cov.toFixed(0)}) + $${(p-cov).toFixed(0)} cash`,
+        net:p-cov,saved:cov,ptsDollarVal:cov,type:'points-partial',ptsNeeded:c.points,payLabel:c.program,
+        cpp:cpp,cppRating:ratingVsBaseline,portalCpp:cpp,baseline:c.pv||1});
+    }
+  });
+
+  // 4. Transfer to partner
+  if(result.loyaltyProgram&&result.loyaltyPts){
+    const src=state.cards.find(c=>c.program===result.loyaltyProgram)||state.loyalty.find(l=>l.name===result.loyaltyProgram);
+    const avail=src?src.points||0:0;
+    if(result.partnerName){
+      const prog=TP[result.loyaltyProgram]||[];
+      const partner=prog.find(x=>x.name===result.partnerName)||prog[0];
+      if(partner){
+        const ptsUsed=Math.min(avail,result.loyaltyPts);
+        const ptsDollarVal=ptsUsed*partner.pv/100;
+        const cashNeeded=Math.max(0,p-ptsDollarVal);
+        const isFull=avail>=result.loyaltyPts;
+        const shortfall=result.loyaltyPts-avail;
+        // Actual CPP this booking yields via transfer
+        const actualCpp=ptsUsed>0?(p-cashNeeded)/ptsUsed*100:0;
+        const baselineCpp=(src?.pv||1);
+        const rating=cppRating(actualCpp,baselineCpp);
+        const detailStr=isFull
+          ? `Transfer ${result.loyaltyPts.toLocaleString()} pts from ${result.loyaltyProgram} → ${result.partnerName} · $0 cash`
+          : `Use all ${avail.toLocaleString()} pts (=$${ptsDollarVal.toFixed(0)}) + $${cashNeeded.toFixed(0)} cash · ${shortfall.toLocaleString()} pts short of full award`;
+        // Also show what same pts would yield via portal for comparison
+        const srcCard=state.cards.find(c=>c.program===result.loyaltyProgram);
+        const portalCppVal=srcCard?portalCpp(result.loyaltyProgram,srcCard):null;
+        const portalPtsNeeded=portalCppVal?Math.ceil(p/(portalCppVal/100)):null;
+        opts.push({key:'tp',label:`Transfer → ${result.partnerName}`,detail:detailStr,
+          net:cashNeeded,ptsDollarVal,ptsUsed,saved:ptsDollarVal,isFull,type:'transfer',
+          ptsNeeded:result.loyaltyPts,partnerName:result.partnerName,partnerPortal:result.partnerPortal,
+          payLabel:result.loyaltyProgram,cpp:actualCpp,cppRating:rating,
+          portalComparison:portalCppVal?{portalName:result.loyaltyProgram+' Portal',portalPts:portalPtsNeeded,portalCpp:portalCppVal,transferCpp:actualCpp}:null});
+      }
+    }
+  }
+
+  // 5. Standalone loyalty programs
+  state.loyalty.forEach(l=>{
+    if(!l.points||l.points<500)return;
+    const pv=(l.pv||1)/100,ptsN=Math.ceil(p/pv);
+    const actualCpp=p/ptsN*100;
+    const rating=cppRating(actualCpp,l.pv||1);
+    if(l.points>=ptsN) opts.push({key:'loy-'+l.name,label:l.name,
+      detail:`Redeem ${ptsN.toLocaleString()} pts · $0 cash`,
+      net:0,saved:p,type:'points-full',ptsNeeded:ptsN,cpp:actualCpp,cppRating:rating});
+  });
+
+  opts.sort((a,b)=>(a.net-b.net)||b.saved-a.saved);
+  return opts;
+}
+
+/* ═══════════════════════════════════════════════════
+   RECOMMENDATION SCORING ENGINE
+   Scores each (result, paymentOption) pair on 3 axes:
+   1. Net cash cost    — lower is better (0–50 pts)
+   2. CPP quality      — vs baseline (0–30 pts)
+   3. Points efficiency — reward per point spent (0–20 pts)
+   ═══════════════════════════════════════════════════ */
+function scoreOption(result, opt, allNets){
+  // Net cash cost score (50 pts) — scaled across all options for this result
+  const maxNet=Math.max(...allNets.filter(n=>isFinite(n)),result.cashPrice);
+  const minNet=Math.min(...allNets.filter(n=>isFinite(n)),0);
+  const range=maxNet-minNet||1;
+  const costScore=((maxNet-opt.net)/range)*50;
+
+  // CPP quality score (30 pts)
+  // For points/transfer options: rate CPP against baseline
+  // For card-earn options: proportional to earn value
+  // For cash: 0 (no rewards)
+  let cppScore=0;
+  if(opt.cpp&&opt.type!=='card'){
+    if(opt.cppRating?.cls==='cpp-great')     cppScore=30;
+    else if(opt.cppRating?.cls==='cpp-good') cppScore=20;
+    else if(opt.cppRating?.cls==='cpp-ok')   cppScore=10;
+    else                                      cppScore=2;
+  } else if(opt.type==='card'){
+    // Reward high earn-rate cards
+    const earnVal=(opt.earnPts||0)*(opt.pv||1)/100;
+    cppScore=Math.min(20, (earnVal/result.cashPrice)*100);
+  }
+
+  // Points efficiency score (20 pts)
+  // Reward high value-per-point burned; penalise burning points at below-baseline rates
+  let effScore=0;
+  if((opt.type==='transfer'||opt.type==='points-full'||opt.type==='points-partial')&&opt.ptsUsed>0){
+    const actualCpp=opt.saved/opt.ptsUsed*100;
+    // Scale: 3¢/pt = 20pts, 2¢/pt = 16pts, 1.5¢/pt = 10pts, 1¢/pt = 5pts, <0.8¢/pt = 0
+    effScore=Math.min(20, Math.max(0, actualCpp*6-3));
+  } else if(opt.type==='card'){
+    effScore=8; // earns points rather than burning them
+  } else if(opt.type==='cash'){
+    effScore=5; // preserves all points for future use
+  }
+
+  const total=Math.round(costScore+cppScore+effScore);
+  return Math.min(100,Math.max(0,total));
+}
+
+function scoreLabel(score){
+  if(score>=80) return {grade:'A',cls:'score-a',label:'Exceptional'};
+  if(score>=65) return {grade:'B',cls:'score-b',label:'Strong'};
+  if(score>=45) return {grade:'C',cls:'score-c',label:'Reasonable'};
+  return              {grade:'D',cls:'score-d',label:'Poor value'};
+}
+
+function buildRecommendation(result, opts){
+  const allNets=opts.map(o=>o.net);
+  const scored=opts.map(o=>({...o,score:scoreOption(result,o,allNets)}));
+  scored.sort((a,b)=>b.score-a.score);
+  const winner=scored[0];
+  const runnerUp=scored[1];
+  const sl=scoreLabel(winner.score);
+
+  // Plain-English explanation with context on why it beats alternatives
+  let why='';
+  const cashOpt=opts.find(o=>o.type==='cash');
+  const cashSaving=cashOpt?(cashOpt.net-winner.net):0;
+
+  if(winner.type==='transfer'){
+    const cppStr=winner.cpp?winner.cpp.toFixed(2)+'¢/pt':'';
+    const cppCtx=winner.cppRating?` — ${winner.cppRating.label.toLowerCase()} use of your points`:'';
+    const vsPortal=winner.portalComparison&&winner.cpp>winner.portalComparison.portalCpp
+      ? ` That's ${(winner.cpp-winner.portalComparison.portalCpp).toFixed(2)}¢/pt better than booking the same flight through the ${winner.portalComparison.portalName} (${winner.portalComparison.portalCpp}¢/pt).`
+      : '';
+    why=winner.isFull
+      ? `Transfer ${winner.ptsUsed?.toLocaleString()} pts from ${winner.payLabel} to ${winner.partnerName}. Pay $0 cash and get ${cppStr}${cppCtx}.${vsPortal}`
+      : `You're ${(winner.ptsNeeded-winner.ptsUsed)?.toLocaleString()} pts short of a full award. Use all ${winner.ptsUsed?.toLocaleString()} pts (=$${winner.ptsDollarVal?.toFixed(0)}) + $${winner.net.toFixed(0)} cash via ${winner.partnerName} at ${cppStr}${cppCtx}.`;
+  } else if(winner.type==='points-full'){
+    const cppCtx=winner.cppRating?` (${winner.cppRating.label.toLowerCase()})`:' ';
+    why=`Redeem ${winner.ptsNeeded?.toLocaleString()} pts from ${winner.payLabel||'your program'} at ${winner.cpp?.toFixed(2)||'—'}¢/pt${cppCtx} — $0 out of pocket.${cashSaving>0?' Saves $'+cashSaving.toFixed(0)+' vs paying cash.':''}`;
+  } else if(winner.type==='points-partial'){
+    why=`Use ${winner.ptsNeeded?.toLocaleString()} pts (=$${winner.saved?.toFixed(0)}) + $${winner.net.toFixed(0)} cash. Effective rate ${winner.cpp?.toFixed(2)||'—'}¢/pt.${cashSaving>0?' Saves $'+cashSaving.toFixed(0)+' vs paying full cash.':''}`;
+  } else if(winner.type==='card'){
+    const earn=(winner.earnPts||0);
+    const earnVal=(earn*(/* pv from card */ 1)/100).toFixed(2);
+    why=`Pay $${result.cashPrice} on ${winner.label} and earn ${earn.toFixed(0)} pts back. Net effective cost $${winner.net.toFixed(2)}.${runnerUp&&runnerUp.type!=='cash'?' Points options available but earn rates make card-pay competitive here.':''}`;
+  } else {
+    why=`No points options available for this listing. Pay $${result.cashPrice} cash and preserve your points for higher-value redemptions.`;
+  }
+
+  return {winner, scored, score:winner.score, sl, why};
+}
+
+function renderSearchResults(){
+  const area=document.getElementById('search-results-area');
+
+  // Score every (result × option) to find the single best booking overall
+  let globalBest=null, globalBestScore=-1, globalBestResult=null;
+  const resultScores=new Map();
+
+  currentResults.forEach(r=>{
+    const opts=buildPayOpts(r);
+    const rec=buildRecommendation(r,opts);
+    resultScores.set(r.id,rec);
+    if(rec.score>globalBestScore){
+      globalBestScore=rec.score;
+      globalBest=rec;
+      globalBestResult=r;
+    }
+  });
+
+  // Top-level recommendation banner
+  const gb=globalBest; const gbr=globalBestResult;
+  const nights=searchType!=='flight'?calcNights():null;
+  const gbTotal=nights?gbr.cashPrice*nights:gbr.cashPrice;
+  const bannerHtml=gb?`<div class="rec-banner">
+    <div class="rec-banner-icon">★</div>
+    <div class="rec-banner-body">
+      <div class="rec-banner-label">PayMax recommends</div>
+      <div class="rec-banner-title">${gbr.name} — ${gb.winner.label}</div>
+      <div class="rec-banner-why">${gb.why}</div>
+    </div>
+    <div class="rec-banner-score">
+      <div class="rec-score-val">${gb.score}</div>
+      <div class="rec-score-label">Value score / 100</div>
+    </div>
+  </div>`:'';
+
+  area.innerHTML=bannerHtml+`<div class="results-hd" style="margin-top:.25rem;">
+    <div class="results-count">${currentResults.length} results · scored &amp; ranked by PayMax</div>
+  </div>
+  ${currentResults.map(r=>{
+    const opts=buildPayOpts(r);
+    const rec=resultScores.get(r.id);
+    const best=opts[0];
+    const isGlobalBest=r.id===gbr?.id;
+    const sl=rec.sl;
+    const perCardRec=rec.why;
+
+    return `<div class="rcard${isGlobalBest?' best-val':''}">
+      <div class="rcard-inner">
+        <div class="rcard-img">${r.icon}</div>
+        <div class="rcard-info">
+          <div>
+            ${isGlobalBest?'<span class="rc-badge b-best">★ PayMax pick</span>':''}
+            ${best?.type==='points-full'||best?.type==='transfer'?'<span class="rc-badge b-pts">Points redeemable</span>':''}
+            <span class="score-pill ${sl.cls}" title="PayMax value score: ${rec.score}/100. Scores net cash cost (50pts), points redemption quality (30pts), and points efficiency (20pts).">Value score ${rec.score}/100</span>
+          </div>
+          <div class="rc-name">${r.name}</div>
+          <div class="rc-sub">${r.sub}</div>
+          <div class="rc-stars">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}</div>
+          <div class="rc-amenities">${r.amenities.map(a=>`<span class="amenity">${a}</span>`).join('')}</div>
+          <div class="rc-price">$${r.cashPrice} <span>cash price</span></div>
+        </div>
+        <div class="rcard-pay">
+          <div class="rcard-pay-title">Payment options</div>
+          ${opts.slice(0,5).map((o,i)=>`<div class="pay-opt${i===0&&o.saved>0?' best-p':''}">
+            <div class="po-lbl">${o.label}${o.cpp?`<span class="cpp-badge ${o.cppRating.cls}">${o.cpp.toFixed(2)}¢/pt · ${o.cppRating.label}</span>`:''}  </div>
+            <div class="po-main">${o.net===0?'<span style="color:var(--green)">Free with points</span>':'$'+o.net.toFixed(0)+' cash'+(o.ptsDollarVal>0?' + $'+o.ptsDollarVal.toFixed(0)+' in pts':'')} </div>
+            <div class="po-detail">${o.detail}</div>
+            ${o.portalComparison?`<div class="portal-compare">
+              <div class="pc-title">vs. booking via portal directly</div>
+              <div class="pc-row"><span>${o.portalComparison.portalName}</span><span class="pc-val">${o.portalComparison.portalPts?.toLocaleString()} pts @ ${o.portalComparison.portalCpp}¢/pt</span></div>
+              <div class="pc-row"><span>This transfer</span><span class="pc-val" style="color:var(--green)">${o.ptsUsed?.toLocaleString()} pts @ ${o.cpp?.toFixed(2)}¢/pt</span></div>
+              <div class="pc-note">${(()=>{
+                const ptsDiff=o.portalComparison.portalPts-o.ptsUsed;
+                const isBetter=o.cpp>o.portalComparison.portalCpp;
+                if(ptsDiff>0&&isBetter) return 'Transferring uses '+ptsDiff.toLocaleString()+' fewer pts than the portal — better value at '+o.cpp.toFixed(2)+'¢/pt vs '+o.portalComparison.portalCpp+'¢/pt';
+                if(ptsDiff>0&&!isBetter) return 'Transferring uses '+ptsDiff.toLocaleString()+' fewer pts, but portal gives fixed guaranteed value ('+o.portalComparison.portalCpp+'¢/pt) — award availability not guaranteed';
+                if(ptsDiff<=0&&isBetter) return 'Transfer costs '+((-ptsDiff).toLocaleString())+' more pts than portal but yields higher value ('+o.cpp.toFixed(2)+'¢/pt vs '+o.portalComparison.portalCpp+'¢/pt)';
+                return 'Portal is better — use '+o.portalComparison.portalPts.toLocaleString()+' pts @ '+o.portalComparison.portalCpp+'¢/pt guaranteed instead';
+              })()}</div>
+            </div>`:''}
+            ${i===0&&o.saved>0?`<div class="po-tag">Saves $${o.saved.toFixed(0)}</div>`:''}
+          </div>`).join('')}
+          <button class="book-btn" onclick="openBookingGuide('${r.id}')">Book this →</button>
+        </div>
+      </div>
+      <div class="per-card-rec">
+        <div class="pcr-icon">→</div>
+        <div class="pcr-body">
+          <strong>PayMax recommends:</strong> ${perCardRec}
+          <div class="pcr-why">Value score ${rec.score}/100 — rated on cash savings, points-per-dollar quality, and how efficiently your points are used</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('')}`;
+}
+
+/* ═══ BOOKING GUIDE ═══ */
+let activeBooking={result:null,opts:[],step:0,selectedOptKey:null,confirmRef:''};
+
+function openBookingGuide(id){
+  const result=currentResults.find(r=>r.id===id); if(!result) return;
+  const opts=buildPayOpts(result);
+  activeBooking={result,opts,step:0,selectedOptKey:opts[0]?.key,confirmRef:''};
+  renderBookingGuideStep();
+  document.getElementById('modal-inner').classList.add('wide');
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function renderBookingGuideStep(){
+  const {result,opts,step}=activeBooking;
+  const chosenOpt=opts.find(o=>o.key===activeBooking.selectedOptKey)||opts[0];
+  const nights=searchType!=='flight'?calcNights():null;
+  const total=nights?result.cashPrice*nights:result.cashPrice;
+  const steps=getBookingSteps(result,chosenOpt,searchParams);
+  const m=document.getElementById('modal-inner');
+
+  if(step===0){
+    // Payment selection screen
+    m.innerHTML=`
+      <button class="modal-close" onclick="closeModal()">×</button>
+      <div class="modal-title">Book — ${result.name}</div>
+      <div class="modal-sub">${result.sub}${nights?' · '+nights+' nights':''} · $${total.toFixed(0)} cash price</div>
+      <div class="modal-section">
+        <div class="modal-section-label">Choose payment strategy</div>
+        ${opts.map((o,i)=>`<div class="ps-opt${activeBooking.selectedOptKey===o.key?' sel':''}${i===0&&o.saved>0?' best':''}" onclick="_spk2('${o.key}',this)">
+          <div class="ps-name">${o.label}${i===0&&o.saved>0?' <span style="font-size:.6rem;color:var(--gold);font-weight:700">BEST</span>':''}${o.cpp?`<span class="cpp-badge ${o.cppRating.cls}">${o.cpp.toFixed(2)}¢/pt</span>`:''}</div>
+          <div class="ps-detail">${o.detail}</div>
+          <div class="ps-value">${o.net===0?'$0 out of pocket':('$'+o.net.toFixed(0)+' cash'+(o.ptsDollarVal>0?' + $'+o.ptsDollarVal.toFixed(0)+' pts':''))}${o.saved>0?' · saves $'+o.saved.toFixed(0)+' vs cash':''}</div>
+          ${o.portalComparison?(()=>{
+            const ptsDiff=o.portalComparison.portalPts-o.ptsUsed;
+            const cppDiff=o.cpp-o.portalComparison.portalCpp;
+            const isBetter=cppDiff>0;
+            const msg=isBetter
+              ? `Transfer yields ${cppDiff.toFixed(2)}¢/pt more than portal (uses ${ptsDiff>0?ptsDiff.toLocaleString()+' fewer':'same'} pts)`
+              : `Portal gives fixed ${o.portalComparison.portalCpp}¢/pt guaranteed — transfer has higher potential but requires award availability`;
+            return `<div style="font-size:.68rem;color:${isBetter?'var(--green)':'var(--amber)'};margin-top:3px;">${msg}</div>`;
+          })():''}
+        </div>`).join('')}
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="confirm-btn" onclick="startBookingGuide()">Start booking guide →</button>
+      </div>`;
+  } else {
+    // Step guide
+    const s=steps[step-1];
+    const totalSteps=steps.length;
+    const isLast=step===totalSteps;
+    m.innerHTML=`
+      <button class="modal-close" onclick="closeModal()">×</button>
+      <div class="modal-title">Booking guide</div>
+      <div class="modal-sub">${result.name} · ${chosenOpt.label}</div>
+      <div class="booking-guide">
+        <div class="bg-progress">
+          ${steps.map((_,i)=>`<div class="bg-step-dot${i<step-1?' done':i===step-1?' active':''}">
+            <div class="dot">${i<step-1?'✓':`${i+1}`}</div>
+            <span class="dot-label">${i===0?(activeBooking.opts.find(o=>o.key===activeBooking.selectedOptKey)?.type==='transfer'?'Transfer':'Search')
+              :i===steps.length-2?'Pay':i===steps.length-1?'Log':'Check'}</span>
+          </div>`).join('')}
+        </div>
+        <div class="bg-step-content">
+          <div class="bgs-title">Step ${step} of ${totalSteps} — ${s.title}</div>
+          <div class="bgs-body">${s.body}</div>
+          ${s.tip?`<div class="bgs-tip">💡 ${s.tip}</div>`:''}
+          ${s.links?.map(l=>`<a class="bgs-link" href="${l.url}" target="_blank">${l.label}</a>`).join('')||''}
+          ${s.isConfirmStep?`<input class="conf-ref-input" placeholder="Paste confirmation number here (optional)…" oninput="activeBooking.confirmRef=this.value">`:''}
+        </div>
+        <div class="bg-nav">
+          ${step>1?`<button class="bg-nav-btn secondary" onclick="activeBooking.step--;renderBookingGuideStep()">← Back</button>`:''}
+          ${isLast
+            ?`<button class="bg-nav-btn done-btn" onclick="finalizeBooking(${total})">✓ Log & complete</button>`
+            :`<button class="bg-nav-btn" onclick="activeBooking.step++;renderBookingGuideStep()">Next step →</button>`}
+        </div>
+      </div>`;
+  }
+}
+
+function _spk2(key,el){
+  activeBooking.selectedOptKey=key;
+  document.querySelectorAll('.ps-opt').forEach(e=>e.classList.remove('sel'));
+  el.classList.add('sel');
+}
+window._spk2=_spk2;
+
+function startBookingGuide(){activeBooking.step=1;renderBookingGuideStep();}
+
+function calcNights(){
+  try{const i=document.getElementById('s-cin')?.value,o=document.getElementById('s-cout')?.value;if(i&&o)return Math.max(1,Math.round((new Date(o)-new Date(i))/86400000));}catch(e){}
+  return 1;
+}
+
+function finalizeBooking(total){
+  const {result,selectedOptKey,opts,confirmRef}=activeBooking;
+  const chosen=opts.find(o=>o.key===selectedOptKey)||opts[0];
+  const ref=confirmRef||'PMX-'+Math.random().toString(36).substr(2,6).toUpperCase();
+  state.log.unshift({date:new Date().toLocaleDateString(),desc:result.name,amount:total,cat:'travel',payWith:chosen.label,valueEarned:chosen.saved,ref});
+  if(chosen.type==='points-full'||chosen.type==='points-partial'||chosen.type==='transfer'){
+    const card=state.cards.find(c=>chosen.key?.includes(c.id));
+    if(card){const u=chosen.ptsNeeded||Math.ceil(total/((card.pv||1)/100));card.points=Math.max(0,(card.points||0)-u);}
+  }
+  state.bookings.push({ref,name:result.name,payment:chosen.label,total,date:new Date().toLocaleDateString()});
+  saveState();
+  document.getElementById('modal-inner').innerHTML=`
+    <div class="conf-inner">
+      <div class="conf-icon">✓</div>
+      <div class="conf-title">Booking logged!</div>
+      <div class="conf-ref">Ref: ${ref}</div>
+      <div class="conf-details">
+        <div class="cd-row"><span class="cd-key">Property / Flight</span><span>${result.name}</span></div>
+        <div class="cd-row"><span class="cd-key">Payment</span><span>${chosen.label}</span></div>
+        <div class="cd-row"><span class="cd-key">Out of pocket</span><span>$${chosen.net.toFixed(0)}</span></div>
+        <div class="cd-row"><span class="cd-key">Value saved</span><span style="color:var(--green);font-weight:600">$${chosen.saved.toFixed(0)}</span></div>
+      </div>
+      <button class="confirm-btn" onclick="closeModal();showPanel('dashboard')">View dashboard →</button>
+    </div>`;
+  renderWallet();
+}
+
+/* ═══ OPTIMIZER ═══ */
+function runOptimizer(){
+  const amount=+document.getElementById('opt-amount').value;
+  const cat=document.getElementById('opt-cat').value;
+  const desc=document.getElementById('opt-desc').value||'Purchase';
+  const el=document.getElementById('opt-results');
+  if(!amount||amount<=0){el.innerHTML='<p style="color:var(--red);font-size:.82rem">Enter a valid amount.</p>';return;}
+  const opts=[];
+  if(state.cash>=amount) opts.push({label:'Cash / Debit',detail:'No rewards earned',net:amount,saved:0});
+  state.cards.forEach(c=>{
+    const rate=(c.rates&&c.rates[cat])||1,earned=amount*rate*(c.pv||1)/100;
+    opts.push({label:c.name,detail:`Earn ${(amount*rate).toFixed(0)} pts (${rate}× ${CAT_LABELS[cat]}) · +$${earned.toFixed(2)} back`,net:amount-earned,saved:earned});
+  });
+  state.cards.forEach(c=>{
+    if(!c.points||c.points<500)return;
+    const pv=(c.pv||1)/100,ptsN=Math.ceil(amount/pv);
+    if(c.points>=ptsN) opts.push({label:`${c.name} Points`,detail:`Redeem ${ptsN.toLocaleString()} pts · $0 cash`,net:0,saved:amount});
+    else{const cov=c.points*pv;opts.push({label:`${c.name} Pts (partial)`,detail:`${c.points.toLocaleString()} pts=$${cov.toFixed(0)} · $${(amount-cov).toFixed(0)} cash`,net:amount-cov,saved:cov});}
+  });
+  state.cards.forEach(c=>{
+    if(!c.program||!c.points)return;
+    (TP[c.program]||[]).forEach(p=>{
+      const ptsN=Math.ceil(amount/(p.pv/100));
+      if(c.points>=ptsN){const tpVal=ptsN*p.pv/100;opts.push({label:`Transfer→${p.name}`,detail:`${ptsN.toLocaleString()} pts from ${c.program} · ${p.pv}¢/pt`,net:Math.max(0,amount-tpVal),saved:tpVal});}
+    });
+  });
+  state.loyalty.forEach(l=>{
+    if(!l.points||l.points<500)return;
+    const pv=(l.pv||1)/100,ptsN=Math.ceil(amount/pv);
+    if(l.points>=ptsN) opts.push({label:`${l.name}`,detail:`Redeem ${ptsN.toLocaleString()} pts · $0 cash`,net:0,saved:amount});
+  });
+  opts.sort((a,b)=>a.net-b.net||b.saved-a.saved);
+  if(!opts.length){el.innerHTML='<div class="empty-state">Add cards in Wallet first.</div>';return;}
+  el.innerHTML=`<div style="font-family:'Syne',sans-serif;font-size:.64rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.7rem">Ranked by net cost — $${amount.toFixed(2)} · ${CAT_LABELS[cat]}</div>
+  <div class="or-list">${opts.map((o,i)=>`<div class="or-item${i===0?' best':''}">
+    <div class="or-rank">${i===0?'★':`${i+1}`}</div>
+    <div class="or-body"><div class="or-name">${o.label}${i===0?'<span class="best-tag">Best</span>':''}</div><div class="or-method">${o.detail}</div></div>
+    <div class="or-right"><div class="or-net">${o.net===0?'$0':'$'+o.net.toFixed(2)}</div>${o.saved>0?`<div class="or-saved">saves $${o.saved.toFixed(2)}</div>`:''}</div>
+  </div>`).join('')}</div>
+  <div style="margin-top:1.4rem"><button class="save-btn" onclick="logOpt('${desc.replace(/'/g,"\\'")}',${amount},'${cat}','${opts[0].label}',${opts[0].saved})">Log this →</button></div>`;
+}
+
+function logOpt(desc,amount,cat,payWith,saved){
+  state.log.unshift({date:new Date().toLocaleDateString(),desc,amount,cat,payWith,valueEarned:saved});
+  saveState();showPanel('log');renderLog();
+}
+
+/* ═══ LOG ═══ */
+function renderLogPayments(){
+  const sel=document.getElementById('log-pay');if(!sel)return;
+  const cur=sel.value;
+  sel.innerHTML=state.cards.map(c=>`<option>${c.name}</option>`).join('')+
+    state.loyalty.map(l=>`<option>${l.name} Points</option>`).join('')+'<option>Cash</option>';
+  if(cur)sel.value=cur;
+}
+function addLog(){
+  const desc=document.getElementById('log-desc').value.trim();
+  const amount=+document.getElementById('log-amount').value;
+  const cat=document.getElementById('log-cat').value;
+  const payWith=document.getElementById('log-pay').value;
+  if(!desc||!amount)return;
+  const c=state.cards.find(x=>x.name===payWith);
+  const earned=c?amount*((c.rates&&c.rates[cat])||1)*(c.pv||1)/100:0;
+  state.log.unshift({date:new Date().toLocaleDateString(),desc,amount,cat,payWith,valueEarned:earned});
+  saveState();
+  document.getElementById('log-desc').value='';document.getElementById('log-amount').value='';
+  renderLog();renderDash();
+}
+function renderLog(){
+  const tb=document.getElementById('log-tbody'),em=document.getElementById('log-empty');
+  if(!state.log.length){tb.innerHTML='';em.style.display='block';return;}
+  em.style.display='none';
+  tb.innerHTML=state.log.map((e,i)=>{
+    const pc=e.payWith==='Cash'?'pill-green':e.payWith.includes('Points')||e.payWith.includes('Transfer')?'pill-blue':'pill-gold';
+    return `<tr><td style="color:var(--muted);font-size:.73rem">${e.date}</td><td>${e.desc}</td>
+      <td><span class="pill pill-green">${CAT_LABELS[e.cat]||e.cat}</span></td>
+      <td style="font-family:'Instrument Serif',serif">$${(+e.amount).toFixed(0)}</td>
+      <td><span class="pill ${pc}">${e.payWith}</span></td>
+      <td style="color:var(--green);font-weight:600">+$${(+e.valueEarned).toFixed(2)}</td>
+      <td><button class="del-btn" onclick="delLog(${i})">×</button></td></tr>`;
+  }).join('');
+}
+function delLog(i){state.log.splice(i,1);saveState();renderLog();renderDash();}
+
+/* ═══ DASHBOARD ═══ */
+function renderDash(){
+  const el=document.getElementById('dash-content');
+  if(!state.log.length){el.innerHTML='<div class="empty-state">Log expenses or complete a booking to see your dashboard.</div>';return;}
+  const totalSpent=state.log.reduce((s,e)=>s+(+e.amount),0);
+  const totalEarned=state.log.reduce((s,e)=>s+(+e.valueEarned),0);
+  const roi=totalSpent>0?(totalEarned/totalSpent*100):0;
+  const cashN=state.log.filter(e=>e.payWith==='Cash').length;
+  const ptsN=state.log.filter(e=>e.payWith.includes('Points')||e.payWith.includes('Transfer')).length;
+  const byCat={},byPay={};
+  state.log.forEach(e=>{byCat[e.cat]=(byCat[e.cat]||0)+(+e.amount);byPay[e.payWith]=(byPay[e.payWith]||0)+(+e.amount);});
+  const mCat=Math.max(...Object.values(byCat),1),mPay=Math.max(...Object.values(byPay),1);
+  const ins=[];
+  if(cashN>1){const cs=state.log.filter(e=>e.payWith==='Cash').reduce((s,e)=>s+(+e.amount),0);ins.push({i:'→',t:`You paid cash ${cashN} times ($${cs.toFixed(0)} total). Routing through a rewards card could earn ~$${(cs*.03).toFixed(0)}+ back.`});}
+  if(ptsN>0) ins.push({i:'★',t:`You used points ${ptsN} times. Transfer partners often yield 20–40% more value than direct redemptions.`});
+  const topCat=Object.entries(byCat).sort((a,b)=>b[1]-a[1])[0];
+  if(topCat&&state.cards.length){const best=state.cards.reduce((b,c)=>((c.rates&&c.rates[topCat[0]])||1)>((b.rates&&b.rates[topCat[0]])||1)?c:b,state.cards[0]);ins.push({i:'✓',t:`Top spend: ${CAT_LABELS[topCat[0]]} ($${topCat[1].toFixed(0)}). Best card: ${best.name} (${(best.rates&&best.rates[topCat[0]])||1}× earn rate).`});}
+  el.innerHTML=`
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">Total spent</div><div class="stat-val">$${totalSpent.toFixed(0)}</div></div>
+      <div class="stat-card"><div class="stat-label">Rewards earned</div><div class="stat-val gold">$${totalEarned.toFixed(2)}</div></div>
+      <div class="stat-card"><div class="stat-label">Reward ROI</div><div class="stat-val green">${roi.toFixed(1)}%</div><div class="stat-sub">${state.log.length} transactions</div></div>
+      <div class="stat-card"><div class="stat-label">Points redeemed</div><div class="stat-val">${ptsN}</div><div class="stat-sub">${cashN} cash payments</div></div>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-box"><div class="chart-title">Spend by category</div>
+        ${Object.entries(byCat).sort((a,b)=>b[1]-a[1]).map(([cat,v])=>`<div class="bar-row">
+          <div class="bar-lbl">${CAT_LABELS[cat]||cat}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${(v/mCat*100).toFixed(0)}%;background:var(--gold)"></div></div>
+          <div class="bar-val">$${v.toFixed(0)}</div></div>`).join('')}
+      </div>
+      <div class="chart-box"><div class="chart-title">Spend by payment method</div>
+        ${Object.entries(byPay).sort((a,b)=>b[1]-a[1]).map(([pay,v])=>`<div class="bar-row">
+          <div class="bar-lbl">${pay}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${(v/mPay*100).toFixed(0)}%;background:var(--blue)"></div></div>
+          <div class="bar-val">$${v.toFixed(0)}</div></div>`).join('')}
+      </div>
+    </div>
+    ${ins.length?`<div class="chart-box"><div class="chart-title">Optimization insights</div><div class="insight-list">
+      ${ins.map(x=>`<div class="insight-item"><div class="ins-icon">${x.i}</div><div>${x.t}</div></div>`).join('')}
+    </div></div>`:''}`;
+}
+
+/* ═══ NAV + MODAL ═══ */
+function showPanel(id){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tnav').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  const map={wallet:'wallet',search:'travel',optimizer:'optim',log:'log',dashboard:'dash'};
+  document.querySelectorAll('.tnav').forEach(b=>{if(b.textContent.toLowerCase().includes(map[id]||id))b.classList.add('active');});
+  if(id==='dashboard')renderDash();
+  if(id==='log'){renderLogPayments();renderLog();}
+  if(id==='wallet')renderWallet();
+  if(id==='search'&&!document.querySelector('#search-form-area input'))renderSearchForm();
+}
+function closeModal(e){
+  if(e&&e.target!==document.getElementById('modal-overlay'))return;
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.getElementById('modal-inner').classList.remove('wide');
+  activeBooking={result:null,opts:[],step:0,selectedOptKey:null,confirmRef:''};
+}
+
+// Returning user
+if(state.cards.length||state.loyalty.length||state.cash!==5000){
+  document.getElementById('onboarding').style.display='none';
+  document.getElementById('app').style.display='block';
+  setTimeout(()=>{renderWallet();renderLogPayments();renderLog();updateWalletPill();renderDash();renderSearchForm();},10);
+}
+</script>
+</body>
+</html>
